@@ -2,3 +2,22 @@ Spec Kit/
 .specify/
 .claude/
 specs/
+
+# Laravel / PHP
+/vendor/
+/node_modules/
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+auth.json
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+*.DS_Store
+/public/hot
+/public/storage
+/storage/*.key
+/storage/logs/*.log
+/bootstrap/cache/*.php
