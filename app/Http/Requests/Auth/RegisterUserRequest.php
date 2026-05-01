@@ -20,7 +20,7 @@ class RegisterUserRequest extends FormRequest
             'brand'                => ['required', 'string'],
             'model'                => ['required', 'string'],
             'year'                 => ['required', 'integer', 'digits:4'],
-            'current_mileage'      => ['required', 'integer', 'min:0'],
+            'current_km'      => ['required', 'integer', 'min:0'],
             'has_warranty'         => ['required', 'boolean'],
             'warranty_limit_km'    => ['required_if:has_warranty,true', 'nullable', 'integer'],
             'warranty_expiry_date' => ['required_if:has_warranty,true', 'nullable', 'date'],

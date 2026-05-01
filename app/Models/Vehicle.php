@@ -22,7 +22,7 @@ class Vehicle extends Model
         'brand',
         'model',
         'year',
-        'current_mileage',
+        'current_km',
         'has_warranty',
         'warranty_limit_km',
         'warranty_expiry_date',
@@ -32,7 +32,7 @@ class Vehicle extends Model
     {
         return [
             'year'                 => 'integer',
-            'current_mileage'      => 'integer',
+            'current_km'      => 'integer',
             'has_warranty'         => 'boolean',
             'warranty_limit_km'    => 'integer',
             'warranty_expiry_date' => 'date',

@@ -15,7 +15,7 @@ class VehicleResource extends JsonResource
             'brand'                => $this->brand,
             'model'                => $this->model,
             'year'                 => $this->year,
-            'current_mileage'      => $this->current_mileage,
+            'current_km'      => $this->current_km,
             'has_warranty'         => $this->has_warranty,
             'warranty_limit_km'    => $this->warranty_limit_km,
             'warranty_expiry_date' => $this->warranty_expiry_date?->toDateString(),

@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('brand', 100);
             $table->string('model', 100);
             $table->integer('year');
-            $table->integer('current_mileage')->default(0);
+            $table->integer('current_km')->default(0);
             $table->boolean('has_warranty')->default(false);
             $table->integer('warranty_limit_km')->nullable();
             $table->date('warranty_expiry_date')->nullable();

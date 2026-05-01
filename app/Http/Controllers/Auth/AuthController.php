@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Http\Resources\UserResource;
@@ -40,7 +41,7 @@ class AuthController extends BaseController
                 'brand'                => $request->brand,
                 'model'                => $request->model,
                 'year'                 => $request->year,
-                'current_mileage'      => $request->current_mileage,
+                'current_km'      => $request->current_km,
                 'has_warranty'         => $request->has_warranty,
                 'warranty_limit_km'    => $request->warranty_limit_km,
                 'warranty_expiry_date' => $request->warranty_expiry_date,
@@ -96,9 +97,32 @@ class AuthController extends BaseController
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
+        // Build a deep link so the mobile app can handle the reset natively
+        Password::createUrlUsing(function ($notifiable, string $token) {
+            return config('app.mobile_scheme') . '://reset-password?token=' . $token . '&email=' . urlencode($notifiable->getEmailForPasswordReset());
+        });
+
         $status = Password::sendResetLink(['email' => $request->email]);
 
         if ($status !== Password::RESET_LINK_SENT) {
+            throw ValidationException::withMessages([
+                'email' => [__($status)],
+            ]);
+        }
+
+        return $this->success([], 200, __($status));
+    }
+
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, string $password) {
+                $user->forceFill(['password' => $password])->save();
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
             throw ValidationException::withMessages([
                 'email' => [__($status)],
             ]);
