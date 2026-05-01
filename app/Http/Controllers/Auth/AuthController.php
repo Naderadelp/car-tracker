@@ -83,7 +83,7 @@ class AuthController extends BaseController
 
     public function me(Request $request): JsonResponse
     {
-        $user = $this->userRepository->with(['vehicles'])->find($request->user()->id);
+        $user = $this->userRepository->find($request->user()->id);
 
         return $this->success(['user' => new UserResource($user)]);
     }
