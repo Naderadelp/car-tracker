@@ -11,7 +11,7 @@ use App\Repositories\Contracts\RepositoryInterface;
 
 abstract class EloquentRepository implements RepositoryInterface
 {
-    protected Model $model;
+    protected Model|EloquentBuilder|SpatieQueryBuilder $model;
 
     protected array $include = [];
 
@@ -135,7 +135,7 @@ abstract class EloquentRepository implements RepositoryInterface
 
     public function create(array $attributes): Model
     {
-        $model = $this->model->newInstance($attributes);
+        $model = app($this->model())->newInstance($attributes);
         $model->save();
         $this->resetModel();
 
@@ -144,7 +144,7 @@ abstract class EloquentRepository implements RepositoryInterface
 
     public function update(array $attributes, int|string $id): Model
     {
-        $record = $this->model->findOrFail($id);
+        $record = app($this->model())->newQuery()->findOrFail($id);
         $record->fill($attributes);
         $record->save();
         $this->resetModel();
@@ -154,7 +154,7 @@ abstract class EloquentRepository implements RepositoryInterface
 
     public function delete(int|string $id): bool
     {
-        $record = $this->model->findOrFail($id);
+        $record = app($this->model())->newQuery()->findOrFail($id);
         $this->resetModel();
 
         return (bool) $record->delete();
@@ -183,7 +183,7 @@ abstract class EloquentRepository implements RepositoryInterface
 
     public function firstOrCreate(array $attributes, array $values = []): Model
     {
-        $result = $this->model->firstOrCreate($attributes, $values);
+        $result = app($this->model())->firstOrCreate($attributes, $values);
         $this->resetModel();
 
         return $result;
