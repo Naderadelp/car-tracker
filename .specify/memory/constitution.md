@@ -114,6 +114,19 @@ Models using media MUST implement `HasMedia` and use the `InteractsWithMedia` tr
 Media is uploaded via `addMediaFromRequest()->toMediaCollection()` or the centralized
 `POST /media` endpoint; direct filesystem writes are forbidden for user-uploaded content.
 
+## API Routing Convention (NON-NEGOTIABLE)
+
+This project does **NOT** use URL versioning. API routes MUST NOT include a `/v1/`, `/v2/`, or
+any version prefix segment. All routes are registered directly under the `api` prefix defined
+by the framework (e.g., `/api/vehicles/{vehicle}/documents`).
+
+Controllers MUST NOT be namespaced under `Api/V1/` or any versioned namespace. They live
+directly under `app/Http/Controllers/` or in a domain-specific subfolder without a version
+segment.
+
+Any generated spec, plan, contract, or task that references `/api/v1/` or `Api\V1\` violates
+this principle and MUST be corrected before implementation begins.
+
 ## Folder & Module Structure
 
 This project follows Domain-Driven Design (DDD) enforced by the folder conventions in
@@ -160,4 +173,4 @@ Complexity Tracking table before approval.
 Reference `architecture_patterns.md` in the repository root for concrete code examples
 illustrating each principle.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-04-30
+**Version**: 1.1.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-01

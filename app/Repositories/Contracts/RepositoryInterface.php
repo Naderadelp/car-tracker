@@ -20,6 +20,8 @@ interface RepositoryInterface
 
     public function delete(int|string $id): bool;
 
+    public function where(string $column, mixed $value): static;
+
     public function with(array|string $relations): static;
 
     public function orderBy(string $column, string $direction = 'asc'): static;

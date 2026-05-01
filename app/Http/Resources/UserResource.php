@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\DocumentResource;
 
 class UserResource extends JsonResource
 {
@@ -14,6 +15,7 @@ class UserResource extends JsonResource
             'name'       => $this->name,
             'email'      => $this->email,
             'vehicles'   => VehicleResource::collection($this->whenLoaded('vehicles')),
+            'documents'  => DocumentResource::collection($this->whenLoaded('documents')),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
         ];
