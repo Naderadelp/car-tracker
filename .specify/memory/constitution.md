@@ -1,24 +1,24 @@
 <!--
 Sync Impact Report
 ==================
-Version change: (initial fill) → 1.0.0
-Modified principles: All placeholder tokens replaced with Car Tracker / Laravel architectural rules
-Added sections:
-  - Core Principles (I–VI)
-  - Folder & Module Structure
-  - Development Workflow
-  - Governance
-Removed sections: None (all sourced from template)
+Version change: 1.1.0 → 1.2.0
+Modified principles: I, II, III, IV, V, Folder & Module Structure, Development Workflow
+Changes:
+  - Principle I: Updated repository paths from src/Domain/ to app/Repositories/;
+    added spatie() mutation-pattern guidance and $include / $allowedFilters properties
+  - Principle II: Updated Form Request paths from src/Domain/{Module}/Http/Requests/
+    to app/Http/Requests/{Module}/
+  - Principle III: Replaced tai-be Responder trait description with BaseController
+    helper-method pattern (success / error / paginated); added StreamedResponse exception note
+  - Principle IV: Replaced DDD src/Domain/ structure with standard Laravel app/ layout
+  - Principle V: Updated Policy paths; added AuthorizesRequests requirement; simplified
+    permission notes to match car-tracker (ownership-based rather than RBAC)
+  - Principle VI: Kept; removed obsolete common-export references
+  - Folder & Module Structure: Replaced DDD tree with actual app/ tree
+  - Development Workflow: Updated step wording to match actual project patterns
 Templates requiring updates:
-  ✅ .specify/memory/constitution.md — this file (initial fill complete)
-  ✅ .specify/templates/plan-template.md — Constitution Check section is a dynamic placeholder;
-     aligned; gates will reference these principles when /speckit-plan runs
-  ✅ .specify/templates/spec-template.md — requirements structure compatible; no changes needed
-  ✅ .specify/templates/tasks-template.md — path conventions note "adjust based on plan.md";
-     Domain structure must be applied per-feature in generated tasks.md
-Follow-up TODOs:
-  - TODO(RATIFICATION_DATE): Using 2026-04-30 (today) as the ratification date; update if the
-    actual project start date is known and differs.
+  - .specify/templates/plan-template.md — paths and architecture section should use
+    app/ conventions going forward; update on next /speckit-plan run
 -->
 
 # Car Tracker Constitution
@@ -30,77 +30,122 @@ Follow-up TODOs:
 All database access MUST go through a repository. Controllers MUST NOT query Eloquent models
 directly. Every domain entity requires:
 
-- A contract interface at `src/Domain/{Module}/Repositories/Contracts/{Entity}Repository.php`
+- A contract interface at `app/Repositories/Contracts/{Entity}Repository.php`
   extending `RepositoryInterface`
 - An Eloquent implementation at
-  `src/Domain/{Module}/Repositories/Eloquent/{Entity}RepositoryEloquent.php`
+  `app/Repositories/Eloquent/{Entity}RepositoryEloquent.php`
   extending `EloquentRepository`
-- A service-provider binding:
+- A service-provider binding in `app/Providers/RepositoryServiceProvider.php`:
   `$this->app->bind(EntityRepository::class, EntityRepositoryEloquent::class)`
 
-Use `->spatie()` before `->paginate()` or `->all()` to apply request-driven filters, includes,
-and sorts. Repositories that support export MUST implement `exportHeadings()`,
-`exportMapsData()`, and `exportRelations()`.
+**Mutation Pattern**: `EloquentRepository` uses a mutable `$this->model` property. Every
+read operation calls `resetModel()` at the end. Write operations (`create`, `update`,
+`delete`, `firstOrCreate`) bypass `$this->model` entirely and use `app($this->model())`
+to obtain a fresh model instance — this avoids Builder-state contamination when `$include`
+is set.
+
+**Eager Loading**: Define `protected array $include = [...]` to auto-load relations in
+`makeModel()`. These are applied for every read through `$this->model`.
+
+**Spatie QueryBuilder**: Repositories that support filtered / sorted / included queries
+MUST declare the relevant arrays:
+
+```php
+protected array $allowedIncludes = [];
+protected array $allowedFilters = [];          // partial match
+protected array $allowedFiltersExact = [];     // exact match
+protected array $allowedFilterScopes = [];     // scope-based
+protected array $allowedSorts = [];
+protected array $allowedDefaultSorts = [];
+```
+
+Call `->spatie()` before `->paginate()` or `->all()` to apply request-driven filters,
+includes, and sorts. When a mandatory scope (e.g. `vehicle_id`) must be applied before
+Spatie wraps the query, chain `->where('column', $value)->spatie()->paginate()`.
 
 ### II. Form Request Validation (NON-NEGOTIABLE)
 
 Validation MUST NEVER appear inline inside a controller method (no `$request->validate([...])`).
 Every write operation (store / update) MUST use a dedicated Form Request class located at
-`src/Domain/{Module}/Http/Requests/`. Controllers receive pre-validated data via
+`app/Http/Requests/{Module}/`. Controllers receive pre-validated data via
 `$request->validated()` only.
 
-### III. Responder Trait (NON-NEGOTIABLE)
+### III. BaseController Response Methods (NON-NEGOTIABLE)
 
-Every controller MUST use the `Responder` trait. Responses are built with:
+Every API controller MUST extend `BaseController` (which extends `Controller` and uses the
+`Responder` trait). Responses are built with:
 
-- `$this->setData('data', $model)` — set the payload
-- `$this->useCollection(SomeResource::class, 'data')` — wrap with an API Resource
-- `$this->setApiResponse(fn () => response()->json([...]))` — override the full response
-- `return $this->response()` — final return (JSON for API clients, Blade for web)
+- `$this->success($data, $status, $message)` — single-resource or operation responses
+- `$this->paginated($paginator, ResourceClass::class)` — paginated collection responses
+- `$this->error($message, $status, $errors)` — error responses
 
 Raw `return response()->json(...)` MUST NOT be used in standard controller actions.
 Every API endpoint MUST return data through a dedicated API Resource class; raw array returns
 are forbidden.
 
-### IV. Domain-Driven Folder Structure
+**Exception — Streamed Binary Responses**: Endpoints that serve file downloads (e.g. secure
+document streaming) MUST return a `StreamedResponse` directly because `JsonResponse` cannot
+carry binary content. This is the only case where bypassing the above helpers is permitted.
 
-Code is organized by domain module under `src/Domain/{Module}/`:
+### IV. Standard Laravel Folder Structure (NON-NEGOTIABLE)
+
+Code is organized under `app/` following the standard Laravel MVC layout:
 
 ```
-src/Domain/{Module}/
-├── Entities/
-│   ├── {Entity}.php                           # Lean model (no business logic)
-│   └── Traits/
-│       ├── {Entity}Relations.php              # All Eloquent relations
-│       └── {Entity}Attributes.php             # Accessors / mutators
+app/
+├── Console/
+│   └── Commands/                              # Artisan console commands
 ├── Http/
 │   ├── Controllers/
+│   │   ├── Controller.php                     # Base (uses AuthorizesRequests)
+│   │   ├── BaseController.php                 # Extends Controller, uses Responder
+│   │   ├── Auth/                              # Auth controllers
+│   │   └── {Domain}/                          # Domain controllers (no version prefix)
 │   ├── Requests/
+│   │   └── {Domain}/                          # Form Request classes per domain
 │   └── Resources/
-├── Policies/
+│       └── {Domain}/                          # API Resource classes per domain
+├── Models/                                    # Eloquent models (flat, no domain nesting)
+├── Policies/                                  # Laravel Policies (flat)
+├── Providers/
+│   ├── AppServiceProvider.php
+│   └── RepositoryServiceProvider.php          # Interface → Eloquent bindings
 ├── Repositories/
-│   ├── Contracts/{Entity}Repository.php
-│   └── Eloquent/{Entity}RepositoryEloquent.php
-└── Providers/{Module}ServiceProvider.php
+│   ├── Contracts/
+│   │   ├── RepositoryInterface.php
+│   │   └── {Entity}Repository.php
+│   └── Eloquent/
+│       ├── EloquentRepository.php             # Base mutation-pattern repository
+│       └── {Entity}RepositoryEloquent.php
+└── Traits/
+    └── Responder.php
 ```
 
-Common/shared infrastructure lives in `src/Common/` and `src/Infrastructure/`.
-No business logic MUST be placed outside these boundaries.
-New modules MUST mirror this structure exactly; deviations require justification in the plan's
-Complexity Tracking table.
+No business logic MUST be placed in Models beyond Eloquent relations, casts, and fillable
+declarations. New entities MUST mirror this structure exactly; deviations require
+justification in the plan's Complexity Tracking table.
 
-### V. Authorization via Policies
+### V. Authorization via Policies (NON-NEGOTIABLE)
 
 Every controller action that reads or mutates data MUST call `$this->authorize()` before
-touching data. Policies live at `src/Domain/{Module}/Policies/{Entity}Policy.php` and MUST
-include a `before()` method granting super-admin unrestricted access via `isSuperAdmin()`.
+touching data.
 
-Permission naming convention: `{action}-{kebab-case-entity}`
-(e.g., `index-broker`, `create-task`, `export-attendance`).
+**AuthorizesRequests trait**: `app/Http/Controllers/Controller.php` MUST include
+`use Illuminate\Foundation\Auth\Access\AuthorizesRequests` and `use AuthorizesRequests;`.
+Without this, `$this->authorize()` is not available in any controller in the application.
 
-After adding a model or custom permission, `php artisan sync:permissions` MUST be run.
-Custom non-CRUD permissions MUST be added to `$customPermissions` in
-`src/Domain/User/Database/Seeds/RolePermissionsSeederTableSeeder.php`.
+Policies live at `app/Policies/{Entity}Policy.php` and MUST include a `before()` method
+returning `null` by default (to be updated with `isSuperAdmin()` once role-based auth is
+implemented).
+
+Authorization strategy is ownership-based: verify `$user->id === $model->user_id` (or the
+relevant FK). Every Policy method MUST explicitly return a `bool`.
+
+After adding a new Policy, register it in `App\Providers\AppServiceProvider` or rely on
+Laravel's automatic discovery for standard naming.
+
+If role-based permissions are added via `sync:permissions`, run
+`php artisan sync:permissions` after any permission set change.
 
 ### VI. Transactional Writes & Observability
 
@@ -111,8 +156,10 @@ Models that are auditable MUST use the `LogsActivity` trait with `getActivitylog
 defined explicitly — log attribute coverage MUST NOT rely on framework defaults.
 
 Models using media MUST implement `HasMedia` and use the `InteractsWithMedia` trait.
-Media is uploaded via `addMediaFromRequest()->toMediaCollection()` or the centralized
-`POST /media` endpoint; direct filesystem writes are forbidden for user-uploaded content.
+Media is uploaded via `addMediaFromRequest()->toMediaCollection()`. The Spatie media
+collection MUST define `->singleFile()` and `->useDisk('local')` for private storage.
+Secure file access MUST return a `StreamedResponse`; public URL generation is forbidden for
+private documents.
 
 ## API Routing Convention (NON-NEGOTIABLE)
 
@@ -121,7 +168,7 @@ any version prefix segment. All routes are registered directly under the `api` p
 by the framework (e.g., `/api/vehicles/{vehicle}/documents`).
 
 Controllers MUST NOT be namespaced under `Api/V1/` or any versioned namespace. They live
-directly under `app/Http/Controllers/` or in a domain-specific subfolder without a version
+directly under `app/Http/Controllers/` or a domain-specific subfolder without a version
 segment.
 
 Any generated spec, plan, contract, or task that references `/api/v1/` or `Api\V1\` violates
@@ -129,27 +176,26 @@ this principle and MUST be corrected before implementation begins.
 
 ## Folder & Module Structure
 
-This project follows Domain-Driven Design (DDD) enforced by the folder conventions in
-Principle IV. Infrastructure abstractions (base repository, base controller, common exports,
-PDF services) live in `src/Infrastructure/` and `src/Common/` respectively and MUST NOT be
-duplicated per domain.
+This project follows the standard Laravel MVC layout enforced by the folder conventions in
+Principle IV. All domain code lives under `app/` with no `src/Domain/` nesting.
 
-View files for PDF generation live in `resources/views/pdf/` or the module's named view
-namespace. PDF services extend the service pattern defined in `src/Domain/GeneratePdf/`.
-
-Excel import/export utilities MUST extend `ImportDataFromExcel` (`src/Common/Services/`) and
-`DataExport` (`src/Common/Export/`) respectively. Export controllers MUST be invokable
-single-action controllers that queue the export job rather than streaming inline.
+Infrastructure abstractions (base repository, base controller, responder trait) are shared
+across all domains and MUST NOT be duplicated per domain:
+- Base repository: `app/Repositories/Eloquent/EloquentRepository.php`
+- Base controller: `app/Http/Controllers/BaseController.php`
+- Responder trait: `app/Traits/Responder.php`
+- Repository bindings: `app/Providers/RepositoryServiceProvider.php`
 
 ## Development Workflow
 
 1. **Define the contract** — create the Repository interface before writing the Eloquent
    implementation.
-2. **Bind in provider** — register the interface-to-implementation binding in the module's
-   ServiceProvider immediately.
+2. **Bind in provider** — register the interface-to-implementation binding in
+   `RepositoryServiceProvider` immediately.
 3. **Form Request first** — write the Form Request class before the controller action.
 4. **Policy before controller** — define and register the Policy before wiring routes.
-5. **Run `sync:permissions`** — after every new model or custom permission is added.
+5. **Declare allowed filters/sorts** — add `$allowedFilters`, `$allowedSorts`, and related
+   arrays to the repository before adding filter support to the controller.
 6. **Wrap side-effects** — use DB transactions for any multi-step write with side effects.
 7. **Resource for every response** — all API data MUST pass through an API Resource class.
 
@@ -173,4 +219,4 @@ Complexity Tracking table before approval.
 Reference `architecture_patterns.md` in the repository root for concrete code examples
 illustrating each principle.
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-01
+**Version**: 1.2.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-01
