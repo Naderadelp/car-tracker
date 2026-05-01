@@ -1,0 +1,385 @@
+{
+  "info": {
+    "name": "CarLog — Identity & Authentication",
+    "_postman_id": "carlog-auth-v1",
+    "description": "Phase 1 Identity & Onboarding endpoints for the CarLog API.\n\nBase URL: {{base_url}}\n\nAfter a successful Register or Login the collection script automatically saves the token to the `token` variable — protected requests use it via Bearer auth.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register Account & Onboard Vehicle",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const json = pm.response.json();",
+              "    if (json.data && json.data.token) {",
+              "        pm.collectionVariables.set('token', json.data.token);",
+              "        console.log('Token saved:', json.data.token);",
+              "    }",
+              "}",
+              "",
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Response has user', () => pm.expect(pm.response.json().data).to.have.property('user'));",
+              "pm.test('Response has vehicle', () => pm.expect(pm.response.json().data).to.have.property('vehicle'));",
+              "pm.test('Response has token', () => pm.expect(pm.response.json().data).to.have.property('token'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ahmed Al-Rashid\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"secret1234\",\n  \"brand\": \"MG\",\n  \"model\": \"One\",\n  \"year\": 2025,\n  \"current_mileage\": 5000,\n  \"has_warranty\": true,\n  \"warranty_limit_km\": 100000,\n  \"warranty_expiry_date\": \"2028-12-31\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/register",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "register"]
+        },
+        "description": "Creates a new user account and onboards their first vehicle atomically in a single DB transaction.\n\nOn success returns HTTP 201 with the user object, the vehicle object, and a plaintext Sanctum token. The test script automatically saves the token to the `token` collection variable."
+      }
+    },
+    {
+      "name": "Register — Duplicate Email (expect 422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 422', () => pm.response.to.have.status(422));",
+              "pm.test('Email error present', () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.errors).to.have.property('email');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ahmed Al-Rashid\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"secret1234\",\n  \"brand\": \"MG\",\n  \"model\": \"One\",\n  \"year\": 2025,\n  \"current_mileage\": 5000,\n  \"has_warranty\": false\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/register",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "register"]
+        },
+        "description": "Submit the same email a second time — expects a 422 with a field-level error on `email`."
+      }
+    },
+    {
+      "name": "Register — Missing Warranty Fields (expect 422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 422', () => pm.response.to.have.status(422));",
+              "pm.test('Warranty fields errors present', () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.errors).to.have.property('warranty_limit_km');",
+              "    pm.expect(json.errors).to.have.property('warranty_expiry_date');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test2@example.com\",\n  \"password\": \"secret1234\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2023,\n  \"current_mileage\": 0,\n  \"has_warranty\": true\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/register",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "register"]
+        },
+        "description": "`has_warranty: true` but `warranty_limit_km` and `warranty_expiry_date` are omitted — expects 422 on both warranty fields."
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const json = pm.response.json();",
+              "    if (json.data && json.data.token) {",
+              "        pm.collectionVariables.set('token', json.data.token);",
+              "        console.log('Token saved:', json.data.token);",
+              "    }",
+              "}",
+              "",
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response has user', () => pm.expect(pm.response.json().data).to.have.property('user'));",
+              "pm.test('Response has token', () => pm.expect(pm.response.json().data).to.have.property('token'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"secret1234\",\n  \"device_name\": \"postman\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "login"]
+        },
+        "description": "Authenticate with email + password. `device_name` is optional — defaults to `mobile_app_token`.\n\nThe test script saves the returned token to the `token` collection variable."
+      }
+    },
+    {
+      "name": "Login — Wrong Password (expect 422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 422', () => pm.response.to.have.status(422));",
+              "pm.test('Email error present', () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.errors).to.have.property('email');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"wrongpassword\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "login"]
+        },
+        "description": "Correct email but wrong password — expects 422 with a field-level error on `email`."
+      }
+    },
+    {
+      "name": "Get Authenticated User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response has user data', () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.data).to.have.property('user');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/user",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "user"]
+        },
+        "description": "Returns the authenticated user's profile including all associated vehicles.\n\nRequires `token` collection variable to be set (done automatically by Login or Register)."
+      }
+    },
+    {
+      "name": "Get Authenticated User — No Token (expect 401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/user",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "user"]
+        },
+        "description": "Call the protected profile endpoint without a token — expects 401 Unauthenticated."
+      }
+    },
+    {
+      "name": "Logout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    pm.collectionVariables.set('token', '');",
+              "    console.log('Token cleared after logout');",
+              "}",
+              "",
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Success message present', () => {",
+              "    pm.expect(pm.response.json()).to.have.property('message');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/logout",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "logout"]
+        },
+        "description": "Invalidates only the current session token. Other device tokens remain active.\n\nThe test script clears the `token` collection variable after a successful logout."
+      }
+    },
+    {
+      "name": "Forgot Password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Status message present', () => {",
+              "    pm.expect(pm.response.json()).to.have.property('message');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"ahmed@example.com\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/forgot-password",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "forgot-password"]
+        },
+        "description": "Sends a password reset link to the provided email address if it exists in the system.\n\nWith `MAIL_MAILER=log` (local), the reset link appears in `storage/logs/laravel.log`."
+      }
+    },
+    {
+      "name": "Forgot Password — Unregistered Email (expect 422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 422', () => pm.response.to.have.status(422));",
+              "pm.test('Email error present', () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.errors).to.have.property('email');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"notfound@example.com\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/forgot-password",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "forgot-password"]
+        },
+        "description": "Email does not exist in the users table — expects 422 with a field-level error on `email`."
+      }
+    }
+  ]
+}

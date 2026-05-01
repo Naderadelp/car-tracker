@@ -5,8 +5,8 @@ namespace Src\Domain\User\Entities;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Src\Domain\User\Entities\Traits\UserAttributes;
 use Src\Domain\User\Entities\Traits\UserRelations;
 

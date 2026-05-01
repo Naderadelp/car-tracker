@@ -4,8 +4,8 @@ namespace Src\Domain\Vehicle\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Src\Domain\Vehicle\Entities\Traits\VehicleAttributes;
 use Src\Domain\Vehicle\Entities\Traits\VehicleRelations;
 
