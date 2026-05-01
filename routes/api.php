@@ -1,15 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Src\Domain\Auth\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\AuthController;
 
-Route::prefix('v1/auth')->group(function () {
-    // Public routes
+Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 
-    // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('user', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);

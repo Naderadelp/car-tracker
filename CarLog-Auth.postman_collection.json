@@ -54,9 +54,9 @@
           "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/register",
+          "raw": "{{base_url}}/api/auth/register",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "register"]
+          "path": ["api", "auth", "register"]
         },
         "description": "Creates a new user account and onboards their first vehicle atomically in a single DB transaction.\n\nOn success returns HTTP 201 with the user object, the vehicle object, and a plaintext Sanctum token. The test script automatically saves the token to the `token` collection variable."
       }
@@ -90,9 +90,9 @@
           "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/register",
+          "raw": "{{base_url}}/api/auth/register",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "register"]
+          "path": ["api", "auth", "register"]
         },
         "description": "Submit the same email a second time — expects a 422 with a field-level error on `email`."
       }
@@ -127,9 +127,9 @@
           "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/register",
+          "raw": "{{base_url}}/api/auth/register",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "register"]
+          "path": ["api", "auth", "register"]
         },
         "description": "`has_warranty: true` but `warranty_limit_km` and `warranty_expiry_date` are omitted — expects 422 on both warranty fields."
       }
@@ -169,9 +169,9 @@
           "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/login",
+          "raw": "{{base_url}}/api/auth/login",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "login"]
+          "path": ["api", "auth", "login"]
         },
         "description": "Authenticate with email + password. `device_name` is optional — defaults to `mobile_app_token`.\n\nThe test script saves the returned token to the `token` collection variable."
       }
@@ -205,9 +205,9 @@
           "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/login",
+          "raw": "{{base_url}}/api/auth/login",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "login"]
+          "path": ["api", "auth", "login"]
         },
         "description": "Correct email but wrong password — expects 422 with a field-level error on `email`."
       }
@@ -239,9 +239,9 @@
           "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/user",
+          "raw": "{{base_url}}/api/auth/user",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "user"]
+          "path": ["api", "auth", "user"]
         },
         "description": "Returns the authenticated user's profile including all associated vehicles.\n\nRequires `token` collection variable to be set (done automatically by Login or Register)."
       }
@@ -265,9 +265,9 @@
           { "key": "Accept", "value": "application/json" }
         ],
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/user",
+          "raw": "{{base_url}}/api/auth/user",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "user"]
+          "path": ["api", "auth", "user"]
         },
         "description": "Call the protected profile endpoint without a token — expects 401 Unauthenticated."
       }
@@ -303,9 +303,9 @@
           "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/logout",
+          "raw": "{{base_url}}/api/auth/logout",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "logout"]
+          "path": ["api", "auth", "logout"]
         },
         "description": "Invalidates only the current session token. Other device tokens remain active.\n\nThe test script clears the `token` collection variable after a successful logout."
       }
@@ -338,9 +338,9 @@
           "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/forgot-password",
+          "raw": "{{base_url}}/api/auth/forgot-password",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "forgot-password"]
+          "path": ["api", "auth", "forgot-password"]
         },
         "description": "Sends a password reset link to the provided email address if it exists in the system.\n\nWith `MAIL_MAILER=log` (local), the reset link appears in `storage/logs/laravel.log`."
       }
@@ -374,9 +374,9 @@
           "options": { "raw": { "language": "json" } }
         },
         "url": {
-          "raw": "{{base_url}}/api/v1/auth/forgot-password",
+          "raw": "{{base_url}}/api/auth/forgot-password",
           "host": ["{{base_url}}"],
-          "path": ["api", "v1", "auth", "forgot-password"]
+          "path": ["api", "auth", "forgot-password"]
         },
         "description": "Email does not exist in the users table — expects 422 with a field-level error on `email`."
       }
