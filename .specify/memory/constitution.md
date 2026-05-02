@@ -38,11 +38,15 @@ directly. Every domain entity requires:
 - A service-provider binding in `app/Providers/RepositoryServiceProvider.php`:
   `$this->app->bind(EntityRepository::class, EntityRepositoryEloquent::class)`
 
-**Mutation Pattern**: `EloquentRepository` uses a mutable `$this->model` property. Every
-read operation calls `resetModel()` at the end. Write operations (`create`, `update`,
-`delete`, `firstOrCreate`) bypass `$this->model` entirely and use `app($this->model())`
-to obtain a fresh model instance — this avoids Builder-state contamination when `$include`
-is set.
+**Mutation Pattern**: `EloquentRepository` uses a mutable `$this->model` property typed as
+`EloquentBuilder|SpatieQueryBuilder`. Every read operation calls `resetModel()` at the end.
+Write operations (`create`, `update`, `delete`, `firstOrCreate`) bypass `$this->model`
+entirely and use `app($this->model())` to obtain a fresh model instance.
+
+**`makeModel()` always produces a Builder**: `makeModel()` MUST call `->newQuery()` on the
+resolved model instance. Never assign a bare `Model` instance to `$this->model` — Spatie
+QueryBuilder's `for()` requires `Builder|Relation|string` and will throw a `TypeError` if
+given a Model.
 
 **Eager Loading**: Define `protected array $include = [...]` to auto-load relations in
 `makeModel()`. These are applied for every read through `$this->model`.
@@ -62,6 +66,11 @@ protected array $allowedDefaultSorts = [];
 Call `->spatie()` before `->paginate()` or `->all()` to apply request-driven filters,
 includes, and sorts. When a mandatory scope (e.g. `vehicle_id`) must be applied before
 Spatie wraps the query, chain `->where('column', $value)->spatie()->paginate()`.
+
+**Spatie v7 variadic API**: `allowedIncludes()`, `allowedFilters()`, and `allowedSorts()`
+are variadic — they accept individual arguments, not a plain array. Always spread the
+arrays: `$query->allowedIncludes(...$this->allowedIncludes)`. Passing an array directly
+throws `TypeError: must be of type AllowedInclude|string, array given`.
 
 ### II. Form Request Validation (NON-NEGOTIABLE)
 
@@ -247,4 +256,4 @@ Complexity Tracking table before approval.
 Reference `architecture_patterns.md` in the repository root for concrete code examples
 illustrating each principle.
 
-**Version**: 1.3.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-02
+**Version**: 1.3.1 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-02

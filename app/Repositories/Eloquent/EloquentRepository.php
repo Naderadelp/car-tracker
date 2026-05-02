@@ -11,7 +11,7 @@ use App\Repositories\Contracts\RepositoryInterface;
 
 abstract class EloquentRepository implements RepositoryInterface
 {
-    protected Model|EloquentBuilder|SpatieQueryBuilder $model;
+    protected EloquentBuilder|SpatieQueryBuilder $model;
 
     protected array $include = [];
 
@@ -39,11 +39,11 @@ abstract class EloquentRepository implements RepositoryInterface
 
     public function makeModel(): void
     {
-        $instance = app($this->model());
+        $builder = app($this->model())->newQuery();
 
         $this->model = empty($this->include)
-            ? $instance
-            : $instance->with($this->include);
+            ? $builder
+            : $builder->with($this->include);
     }
 
     public function resetModel(): void
@@ -73,15 +73,15 @@ abstract class EloquentRepository implements RepositoryInterface
         $query = SpatieQueryBuilder::for($this->model);
 
         if (!empty($this->allowedIncludes)) {
-            $query->allowedIncludes($this->allowedIncludes);
+            $query->allowedIncludes(...$this->allowedIncludes);
         }
 
         if (!empty($allFilters)) {
-            $query->allowedFilters($allFilters);
+            $query->allowedFilters(...$allFilters);
         }
 
         if (!empty($this->allowedSorts)) {
-            $query->allowedSorts($this->allowedSorts);
+            $query->allowedSorts(...$this->allowedSorts);
         }
 
         if (!empty($this->allowedDefaultSorts)) {
