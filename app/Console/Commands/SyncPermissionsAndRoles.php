@@ -11,9 +11,13 @@ class SyncPermissionsAndRoles extends Command
 
     protected $description = 'Sync permissions and roles';
 
-    public function handle(): void
+    public function handle(): int
     {
         $seeder = new RolePermissionsSeeder();
         $seeder->run();
+
+        $this->info('Permissions and roles synced successfully.');
+
+        return self::SUCCESS;
     }
 }

@@ -12,6 +12,7 @@
         "laravel/tinker": "^3.0",
         "spatie/laravel-activitylog": "^5.0",
         "spatie/laravel-medialibrary": "^11.22",
+        "spatie/laravel-permission": "^7.4",
         "spatie/laravel-query-builder": "^7.2"
     },
     "require-dev": {

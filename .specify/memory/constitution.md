@@ -106,6 +106,11 @@ app/
 │   └── Resources/
 │       └── {Domain}/                          # API Resource classes per domain
 ├── Models/                                    # Eloquent models (flat, no domain nesting)
+│   ├── Permission.php                         # Extends Spatie Permission (guard_name: api)
+│   ├── Role.php                               # Extends Spatie Role (guard_name: api)
+│   └── Traits/
+│       ├── HasDefaultRoles.php                # isAdmin(), isSuperUser(), isUser()
+│       └── UserRelations.php                  # Eloquent relations for User
 ├── Policies/                                  # Laravel Policies (flat)
 ├── Providers/
 │   ├── AppServiceProvider.php
@@ -134,18 +139,39 @@ touching data.
 `use Illuminate\Foundation\Auth\Access\AuthorizesRequests` and `use AuthorizesRequests;`.
 Without this, `$this->authorize()` is not available in any controller in the application.
 
-Policies live at `app/Policies/{Entity}Policy.php` and MUST include a `before()` method
-returning `null` by default (to be updated with `isSuperAdmin()` once role-based auth is
-implemented).
+**Role-Based Access (spatie/laravel-permission)**: The project uses three system roles:
 
-Authorization strategy is ownership-based: verify `$user->id === $model->user_id` (or the
-relevant FK). Every Policy method MUST explicitly return a `bool`.
+| Role | Description |
+|------|-------------|
+| `admin` | Full access — `before()` returns `true`, bypassing all policy checks |
+| `super-user` | Elevated access — assign specific permissions as needed |
+| `user` | Standard access — ownership-based checks only |
+
+The `User` model MUST use `Spatie\Permission\Traits\HasRoles` and `App\Models\Traits\HasDefaultRoles`.
+Set `protected string $guard_name = 'api'` on the User model.
+
+`Permission` and `Role` models MUST extend the Spatie base models and hard-code
+`$guard_name = 'api'` so all permission checks use the Sanctum guard.
+
+Every Policy MUST include a `before()` method:
+
+```php
+public function before(User $user, string $ability): ?bool
+{
+    return $user->isAdmin() ? true : null;
+}
+```
+
+Ownership checks: verify `$user->id === $model->user_id` (or the relevant FK).
+Every Policy method MUST explicitly return a `bool`.
 
 After adding a new Policy, register it in `App\Providers\AppServiceProvider` or rely on
 Laravel's automatic discovery for standard naming.
 
-If role-based permissions are added via `sync:permissions`, run
-`php artisan sync:permissions` after any permission set change.
+**Permission sync**: After any change to models, roles, or custom permissions in
+`RolePermissionsSeeder`, run `php artisan sync:permissions`.
+CRUD permissions are auto-generated as `{action}-{model}` (e.g., `create-vehicle`).
+Custom permissions go in the `$customPermissions` array of `RolePermissionsSeeder`.
 
 ### VI. Transactional Writes & Observability
 
@@ -198,6 +224,8 @@ across all domains and MUST NOT be duplicated per domain:
    arrays to the repository before adding filter support to the controller.
 6. **Wrap side-effects** — use DB transactions for any multi-step write with side effects.
 7. **Resource for every response** — all API data MUST pass through an API Resource class.
+8. **Run `sync:permissions`** — after every new model or custom permission is added to
+   `RolePermissionsSeeder`, run `php artisan sync:permissions`.
 
 ## Governance
 
@@ -219,4 +247,4 @@ Complexity Tracking table before approval.
 Reference `architecture_patterns.md` in the repository root for concrete code examples
 illustrating each principle.
 
-**Version**: 1.2.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-01
+**Version**: 1.3.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-02

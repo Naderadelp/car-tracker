@@ -9,12 +9,16 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+use App\Models\Traits\HasDefaultRoles;
 use App\Models\Traits\UserRelations;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, LogsActivity, Notifiable, UserRelations;
+    use HasApiTokens, HasFactory, HasRoles, HasDefaultRoles, LogsActivity, Notifiable, UserRelations;
+
+    protected string $guard_name = 'api';
 
     public static $logAttributes = ['*'];
     protected static $logName = 'User';

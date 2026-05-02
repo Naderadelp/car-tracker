@@ -10,8 +10,7 @@ class DocumentPolicy
 {
     public function before(User $user, string $ability): ?bool
     {
-        // TODO: return true if $user->isSuperAdmin() once super-admin role is implemented
-        return null;
+        return $user->isAdmin() ? true : null;
     }
 
     public function viewAny(User $user, Vehicle $vehicle): bool
