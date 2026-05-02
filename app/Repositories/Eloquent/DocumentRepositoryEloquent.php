@@ -7,11 +7,20 @@ use App\Repositories\Contracts\DocumentRepository;
 
 class DocumentRepositoryEloquent extends EloquentRepository implements DocumentRepository
 {
-    protected array $allowedFiltersExact = ['type'];
+    protected array $allowedIncludes = [
+        'media',
+        'user',
+    ];
 
-    protected array $allowedSorts = ['created_at'];
+    protected array $allowedFiltersExact = [
+        'type',
+        'user_id',
+        'vehicle_id',
+    ];
 
-    protected array $include = ['user'];
+    protected array $allowedSorts = ['created_at', 'id'];
+
+    protected array $allowedDefaultSorts = ['-id'];
 
     public function model(): string
     {

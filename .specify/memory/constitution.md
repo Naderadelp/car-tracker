@@ -1,11 +1,13 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.3.1 → 1.4.0
+Version change: 1.3.1 → 1.4.1
 Modified principles: I, II, V, Development Workflow
 Changes:
   - Principle I: Added scopeToUser() hook — called every makeModel(); any entity with
     user_id MUST override it; admin bypasses automatically via isAdmin()
+  - Principle I: Added default sort rule — every repository MUST declare allowedDefaultSorts = ['-id']
+    for newest-first ordering; override only when domain has a stronger natural sort
   - Principle II: Added Form Request authorization pattern — authorize() MUST delegate
     to Gate via $this->user()->can() so Gate::before() and policies both apply;
     store/update authorization lives in Form Request, NOT in the controller
@@ -64,6 +66,12 @@ Repositories for system-wide resources (Role, Permission) do NOT override this.
 **Eager Loading**: Define `protected array $include = [...]` to auto-load relations in
 `makeModel()`. These are applied for every read through `$this->model`.
 
+**Media eager loading**: If a model implements `HasMedia` (Spatie Media Library), add `'media'`
+to `$include` so file metadata is always available without an extra query. Also add `'media'`
+to `$allowedIncludes` so clients can explicitly request it. Never expose a public URL for
+media stored on the `local` disk — return metadata only via `MediaResource` and serve the
+file through the dedicated `secureDownload` endpoint.
+
 **Spatie QueryBuilder**: Repositories that support filtered / sorted / included queries
 MUST declare the relevant arrays:
 
@@ -73,8 +81,12 @@ protected array $allowedFilters = [];          // partial match
 protected array $allowedFiltersExact = [];     // exact match
 protected array $allowedFilterScopes = [];     // scope-based
 protected array $allowedSorts = [];
-protected array $allowedDefaultSorts = [];
+protected array $allowedDefaultSorts = ['-id']; // newest-first by default
 ```
+
+**Default sort (`-id`)**: Every repository MUST declare `protected array $allowedDefaultSorts = ['-id']`
+so all paginated/listed responses are ordered newest-first unless the client overrides with `?sort=`.
+Override this only when the domain has a stronger natural order (e.g. expiry_date for Documents).
 
 Call `->spatie()` before `->paginate()` or `->all()` to apply request-driven filters,
 includes, and sorts. When a mandatory scope (e.g. `vehicle_id`) must be applied before
@@ -323,4 +335,4 @@ Complexity Tracking table before approval.
 Reference `architecture_patterns.md` in the repository root for concrete code examples
 illustrating each principle.
 
-**Version**: 1.4.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-02
+**Version**: 1.4.1 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-02
