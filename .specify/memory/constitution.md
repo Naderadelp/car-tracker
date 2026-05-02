@@ -1,24 +1,19 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.1.0 → 1.2.0
-Modified principles: I, II, III, IV, V, Folder & Module Structure, Development Workflow
+Version change: 1.3.1 → 1.4.0
+Modified principles: I, II, V, Development Workflow
 Changes:
-  - Principle I: Updated repository paths from src/Domain/ to app/Repositories/;
-    added spatie() mutation-pattern guidance and $include / $allowedFilters properties
-  - Principle II: Updated Form Request paths from src/Domain/{Module}/Http/Requests/
-    to app/Http/Requests/{Module}/
-  - Principle III: Replaced tai-be Responder trait description with BaseController
-    helper-method pattern (success / error / paginated); added StreamedResponse exception note
-  - Principle IV: Replaced DDD src/Domain/ structure with standard Laravel app/ layout
-  - Principle V: Updated Policy paths; added AuthorizesRequests requirement; simplified
-    permission notes to match car-tracker (ownership-based rather than RBAC)
-  - Principle VI: Kept; removed obsolete common-export references
-  - Folder & Module Structure: Replaced DDD tree with actual app/ tree
-  - Development Workflow: Updated step wording to match actual project patterns
-Templates requiring updates:
-  - .specify/templates/plan-template.md — paths and architecture section should use
-    app/ conventions going forward; update on next /speckit-plan run
+  - Principle I: Added scopeToUser() hook — called every makeModel(); any entity with
+    user_id MUST override it; admin bypasses automatically via isAdmin()
+  - Principle II: Added Form Request authorization pattern — authorize() MUST delegate
+    to Gate via $this->user()->can() so Gate::before() and policies both apply;
+    store/update authorization lives in Form Request, NOT in the controller
+  - Principle V: Global Gate::before() in AppServiceProvider replaces per-policy before();
+    individual policies no longer have before(); all policies registered in AppServiceProvider;
+    store/update: Form Request handles authorization; read/delete/custom: controller handles it;
+    policy methods check ownership OR hasPermissionTo(); secureDownload() is separate from view()
+  - Development Workflow: Added step for scopeToUser() override requirement
 -->
 
 # Car Tracker Constitution
@@ -48,6 +43,24 @@ resolved model instance. Never assign a bare `Model` instance to `$this->model` 
 QueryBuilder's `for()` requires `Builder|Relation|string` and will throw a `TypeError` if
 given a Model.
 
+**`scopeToUser()` hook (NON-NEGOTIABLE for user-owned entities)**: `EloquentRepository`
+exposes a `protected function scopeToUser(): void {}` no-op called at the end of every
+`makeModel()` (and therefore after every `resetModel()`). Any repository whose model has a
+`user_id` column MUST override it:
+
+```php
+protected function scopeToUser(): void
+{
+    if (auth()->check() && !auth()->user()->isAdmin()) {
+        $this->model = $this->model->where('user_id', auth()->id());
+    }
+}
+```
+
+This ensures non-admin users only ever read their own records regardless of which
+controller or query path is used. Admin bypasses the scope via `isAdmin()`.
+Repositories for system-wide resources (Role, Permission) do NOT override this.
+
 **Eager Loading**: Define `protected array $include = [...]` to auto-load relations in
 `makeModel()`. These are applied for every read through `$this->model`.
 
@@ -72,12 +85,44 @@ are variadic — they accept individual arguments, not a plain array. Always spr
 arrays: `$query->allowedIncludes(...$this->allowedIncludes)`. Passing an array directly
 throws `TypeError: must be of type AllowedInclude|string, array given`.
 
-### II. Form Request Validation (NON-NEGOTIABLE)
+### II. Form Request Validation & Authorization (NON-NEGOTIABLE)
 
 Validation MUST NEVER appear inline inside a controller method (no `$request->validate([...])`).
 Every write operation (store / update) MUST use a dedicated Form Request class located at
 `app/Http/Requests/{Module}/`. Controllers receive pre-validated data via
 `$request->validated()` only.
+
+**Authorization split — Form Request owns store/update, controller owns everything else**:
+
+- `store` and `update` actions: authorization lives in the Form Request's `authorize()`
+  method. The controller method does NOT call `$this->authorize()` for these actions.
+- `index`, `show`, `destroy`, and any custom action: authorization stays in the controller
+  via `$this->authorize()`.
+
+**Form Request `authorize()` MUST delegate to the Gate** via `$this->user()->can()` — never
+use raw ownership checks (`auth()->id() === $model->user_id`). Delegating to the Gate
+ensures `Gate::before()` (global admin bypass) and the Policy's permission checks both fire
+automatically:
+
+```php
+// store — pass model class + route-bound parent
+public function authorize(): bool
+{
+    return $this->user()->can('create', [Document::class, $this->route('vehicle')]);
+}
+
+// update — pass the route-bound model instance
+public function authorize(): bool
+{
+    return $this->user()->can('update', $this->route('document'));
+}
+
+// simple permission (no model context)
+public function authorize(): bool
+{
+    return $this->user()->can('assign-role');
+}
+```
 
 ### III. BaseController Response Methods (NON-NEGOTIABLE)
 
@@ -120,16 +165,16 @@ app/
 │   └── Traits/
 │       ├── HasDefaultRoles.php                # isAdmin(), isSuperUser(), isUser()
 │       └── UserRelations.php                  # Eloquent relations for User
-├── Policies/                                  # Laravel Policies (flat)
+├── Policies/                                  # Laravel Policies (flat, no before() method)
 ├── Providers/
-│   ├── AppServiceProvider.php
+│   ├── AppServiceProvider.php                 # Gate::before() + all Gate::policy() bindings
 │   └── RepositoryServiceProvider.php          # Interface → Eloquent bindings
 ├── Repositories/
 │   ├── Contracts/
 │   │   ├── RepositoryInterface.php
 │   │   └── {Entity}Repository.php
 │   └── Eloquent/
-│       ├── EloquentRepository.php             # Base mutation-pattern repository
+│       ├── EloquentRepository.php             # Base repository (scopeToUser hook inside)
 │       └── {Entity}RepositoryEloquent.php
 └── Traits/
     └── Responder.php
@@ -141,18 +186,30 @@ justification in the plan's Complexity Tracking table.
 
 ### V. Authorization via Policies (NON-NEGOTIABLE)
 
-Every controller action that reads or mutates data MUST call `$this->authorize()` before
-touching data.
+**Global admin bypass via `Gate::before()`**: `AppServiceProvider::boot()` registers a
+single global gate callback that bypasses ALL authorization checks for admin users:
 
-**AuthorizesRequests trait**: `app/Http/Controllers/Controller.php` MUST include
+```php
+Gate::before(function (User $user, string $ability) {
+    return $user->isAdmin() ? true : null;
+});
+```
+
+Individual policies MUST NOT define a `before()` method — the global handler covers all
+of them. Adding `before()` to a policy creates a redundant double-check and can mask bugs.
+
+**All policies MUST be registered in `AppServiceProvider`** via `Gate::policy()`. Do not
+rely on Laravel's automatic discovery — explicit registration is required so the global
+`Gate::before()` applies consistently.
+
+**`AuthorizesRequests` trait**: `app/Http/Controllers/Controller.php` MUST include
 `use Illuminate\Foundation\Auth\Access\AuthorizesRequests` and `use AuthorizesRequests;`.
-Without this, `$this->authorize()` is not available in any controller in the application.
 
 **Role-Based Access (spatie/laravel-permission)**: The project uses three system roles:
 
 | Role | Description |
 |------|-------------|
-| `admin` | Full access — `before()` returns `true`, bypassing all policy checks |
+| `admin` | Full access — `Gate::before()` returns `true`, bypassing all checks |
 | `super-user` | Elevated access — assign specific permissions as needed |
 | `user` | Standard access — ownership-based checks only |
 
@@ -162,20 +219,25 @@ Set `protected string $guard_name = 'api'` on the User model.
 `Permission` and `Role` models MUST extend the Spatie base models and hard-code
 `$guard_name = 'api'` so all permission checks use the Sanctum guard.
 
-Every Policy MUST include a `before()` method:
+**Policy methods**: Each method checks ownership OR permission (granting super-user access):
 
 ```php
-public function before(User $user, string $ability): ?bool
+public function view(User $user, Document $document): bool
 {
-    return $user->isAdmin() ? true : null;
+    return $user->id === $document->user_id
+        || $user->hasPermissionTo('show-document');
 }
 ```
 
+File download endpoints require a dedicated `secureDownload()` policy method checking the
+`secure-download-document` permission — separate from the `view()` / `show-document` pair.
+
+**Authorization placement**:
+- `store` / `update` → Form Request `authorize()` via `$this->user()->can()` (see Principle II)
+- `index` / `show` / `destroy` / custom → controller `$this->authorize()`
+
 Ownership checks: verify `$user->id === $model->user_id` (or the relevant FK).
 Every Policy method MUST explicitly return a `bool`.
-
-After adding a new Policy, register it in `App\Providers\AppServiceProvider` or rely on
-Laravel's automatic discovery for standard naming.
 
 **Permission sync**: After any change to models, roles, or custom permissions in
 `RolePermissionsSeeder`, run `php artisan sync:permissions`.
@@ -220,6 +282,7 @@ across all domains and MUST NOT be duplicated per domain:
 - Base controller: `app/Http/Controllers/BaseController.php`
 - Responder trait: `app/Traits/Responder.php`
 - Repository bindings: `app/Providers/RepositoryServiceProvider.php`
+- Global gate setup + policy bindings: `app/Providers/AppServiceProvider.php`
 
 ## Development Workflow
 
@@ -227,14 +290,18 @@ across all domains and MUST NOT be duplicated per domain:
    implementation.
 2. **Bind in provider** — register the interface-to-implementation binding in
    `RepositoryServiceProvider` immediately.
-3. **Form Request first** — write the Form Request class before the controller action.
-4. **Policy before controller** — define and register the Policy before wiring routes.
-5. **Declare allowed filters/sorts** — add `$allowedFilters`, `$allowedSorts`, and related
+3. **`scopeToUser()`** — if the entity has a `user_id`, override `scopeToUser()` in the
+   repository immediately after creation.
+4. **Form Request first** — write the Form Request class (with `authorize()` delegating to
+   `$this->user()->can()`) before the controller action.
+5. **Policy before controller** — define the Policy (no `before()` method) and register it
+   in `AppServiceProvider` via `Gate::policy()` before wiring routes.
+6. **Add to `RolePermissionsSeeder`** — add the entity to `$models` and run
+   `php artisan sync:permissions`.
+7. **Declare allowed filters/sorts** — add `$allowedFilters`, `$allowedSorts`, and related
    arrays to the repository before adding filter support to the controller.
-6. **Wrap side-effects** — use DB transactions for any multi-step write with side effects.
-7. **Resource for every response** — all API data MUST pass through an API Resource class.
-8. **Run `sync:permissions`** — after every new model or custom permission is added to
-   `RolePermissionsSeeder`, run `php artisan sync:permissions`.
+8. **Wrap side-effects** — use DB transactions for any multi-step write with side effects.
+9. **Resource for every response** — all API data MUST pass through an API Resource class.
 
 ## Governance
 
@@ -256,4 +323,4 @@ Complexity Tracking table before approval.
 Reference `architecture_patterns.md` in the repository root for concrete code examples
 illustrating each principle.
 
-**Version**: 1.3.1 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-02
+**Version**: 1.4.0 | **Ratified**: 2026-04-30 | **Last Amended**: 2026-05-02

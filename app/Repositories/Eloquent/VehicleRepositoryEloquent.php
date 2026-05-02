@@ -11,4 +11,11 @@ class VehicleRepositoryEloquent extends EloquentRepository implements VehicleRep
     {
         return Vehicle::class;
     }
+
+    protected function scopeToUser(): void
+    {
+        if (auth()->check() && !auth()->user()->isAdmin()) {
+            $this->model = $this->model->where('user_id', auth()->id());
+        }
+    }
 }

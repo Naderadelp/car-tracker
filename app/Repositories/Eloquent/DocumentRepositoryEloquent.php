@@ -11,9 +11,18 @@ class DocumentRepositoryEloquent extends EloquentRepository implements DocumentR
 
     protected array $allowedSorts = ['created_at'];
 
+    protected array $include = ['user'];
+
     public function model(): string
     {
         return Document::class;
+    }
+
+    protected function scopeToUser(): void
+    {
+        if (auth()->check() && !auth()->user()->isAdmin()) {
+            $this->model = $this->model->where('user_id', auth()->id());
+        }
     }
 
     public function spatie(): static

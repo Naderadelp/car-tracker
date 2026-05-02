@@ -36,8 +36,6 @@ class RoleController extends BaseController
 
     public function store(StoreRoleRequest $request): JsonResponse
     {
-        $this->authorize('create', Role::class);
-
         $role = $this->roleRepository->create($request->validated());
 
         return $this->success(new RoleResource($role), 201, 'Role created successfully.');
@@ -45,8 +43,6 @@ class RoleController extends BaseController
 
     public function update(UpdateRoleRequest $request, Role $role): JsonResponse
     {
-        $this->authorize('update', $role);
-
         $role = $this->roleRepository->update($request->validated(), $role->id);
 
         return $this->success(new RoleResource($role));

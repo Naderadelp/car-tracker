@@ -6,11 +6,6 @@ use App\Models\User;
 
 class UserPolicy
 {
-    public function before(User $user, string $ability): ?bool
-    {
-        return $user->isAdmin() ? true : null;
-    }
-
     public function viewRoles(User $user, User $target): bool
     {
         return $user->id === $target->id || $user->hasPermissionTo('show-user');

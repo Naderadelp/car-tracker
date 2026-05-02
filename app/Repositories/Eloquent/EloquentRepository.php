@@ -44,7 +44,11 @@ abstract class EloquentRepository implements RepositoryInterface
         $this->model = empty($this->include)
             ? $builder
             : $builder->with($this->include);
+
+        $this->scopeToUser();
     }
+
+    protected function scopeToUser(): void {}
 
     public function resetModel(): void
     {

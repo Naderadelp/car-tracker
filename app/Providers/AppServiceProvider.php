@@ -5,23 +5,27 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Document;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
 use App\Policies\DocumentPolicy;
+use App\Policies\PermissionPolicy;
+use App\Policies\RolePolicy;
+use App\Policies\UserPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        Gate::policy(Document::class, DocumentPolicy::class);
+        Gate::before(function (User $user, string $ability) {
+            return $user->isAdmin() ? true : null;
+        });
+
+        Gate::policy(Document::class,   DocumentPolicy::class);
+        Gate::policy(Role::class,       RolePolicy::class);
+        Gate::policy(Permission::class, PermissionPolicy::class);
+        Gate::policy(User::class,       UserPolicy::class);
     }
 }

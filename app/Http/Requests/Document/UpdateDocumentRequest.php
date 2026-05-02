@@ -10,9 +10,7 @@ class UpdateDocumentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $document = $this->route('document');
-
-        return auth()->id() === $document->user_id;
+        return $this->user()->can('update', $this->route('document'));
     }
 
     public function rules(): array

@@ -12,7 +12,7 @@ class UserRoleController extends BaseController
 {
     public function index(User $user): JsonResponse
     {
-        $this->authorize('viewRoles', $user);
+        $this->authorize('index-user');
 
         $user->load('roles.permissions');
 
@@ -21,8 +21,6 @@ class UserRoleController extends BaseController
 
     public function store(AssignRoleRequest $request, User $user): JsonResponse
     {
-        $this->authorize('assignRole', $user);
-
         $user->assignRole($request->validated()['role']);
         $user->load('roles');
 
@@ -31,7 +29,7 @@ class UserRoleController extends BaseController
 
     public function destroy(User $user, Role $role): JsonResponse
     {
-        $this->authorize('revokeRole', $user);
+        $this->authorize('revoke-role');
 
         $user->removeRole($role);
 

@@ -33,8 +33,6 @@ class DocumentController extends BaseController
 
     public function store(StoreDocumentRequest $request, Vehicle $vehicle): JsonResponse
     {
-        $this->authorize('create', $vehicle);
-
         try {
             DB::beginTransaction();
 
@@ -60,8 +58,6 @@ class DocumentController extends BaseController
 
     public function update(UpdateDocumentRequest $request, Vehicle $vehicle, Document $document): JsonResponse
     {
-        $this->authorize('update', $document);
-
         abort_if($document->vehicle_id !== $vehicle->id, 404);
 
         try {
@@ -91,7 +87,7 @@ class DocumentController extends BaseController
 
     public function show(Request $request, Vehicle $vehicle, Document $document): StreamedResponse
     {
-        $this->authorize('view', $document);
+        $this->authorize('secureDownload', $document);
 
         abort_if($document->vehicle_id !== $vehicle->id, 404, 'No media file found for this document.');
 

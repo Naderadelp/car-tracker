@@ -17,6 +17,7 @@ class DocumentResource extends JsonResource
             'has_file'     => $this->hasMedia('vehicle_documents'),
             'created_at'   => $this->created_at->toISOString(),
             'updated_at'   => $this->updated_at->toISOString(),
+            'user'         => new UserResource($this->whenLoaded('user')),
         ];
     }
 }
