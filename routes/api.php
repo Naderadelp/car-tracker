@@ -19,16 +19,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-
-    Route::prefix('vehicles/{vehicle}')->group(function () {
-        Route::get('documents', [DocumentController::class, 'index']);
-        Route::post('documents', [DocumentController::class, 'store']);
-        Route::put('documents/{document}', [DocumentController::class, 'update']);
-        Route::get('documents/{document}/file', [DocumentController::class, 'show']);
-        Route::delete('documents/{document}', [DocumentController::class, 'destroy']);
-    });
-
+Route::middleware('auth:sanctum')->group(function ()
+{
     // Roles
     Route::get('roles', [RoleController::class, 'index']);
     Route::post('roles', [RoleController::class, 'store']);
@@ -45,4 +37,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('users/{user}/roles', [UserRoleController::class, 'index']);
     Route::post('users/{user}/roles', [UserRoleController::class, 'store']);
     Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'destroy']);
+
+    // Documents
+    Route::prefix('vehicles/{vehicle}')->group(function () {
+        Route::get('documents', [DocumentController::class, 'index']);
+        Route::post('documents', [DocumentController::class, 'store']);
+        Route::put('documents/{document}', [DocumentController::class, 'update']);
+        Route::get('documents/{document}/file', [DocumentController::class, 'show']);
+        Route::delete('documents/{document}', [DocumentController::class, 'destroy']);
+    });
 });
