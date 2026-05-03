@@ -20,7 +20,7 @@ class CarModelController extends BaseController
 
     public function store(StoreCarModelRequest $request, Brand $brand): JsonResponse
     {
-        $carModel = $brand->carModels()->create(['name' => $request->name]);
+        $carModel = $brand->carModels()->create($request->only(['name', 'model_year']));
 
         return $this->success(new CarModelResource($carModel), 201, 'Car model created successfully.');
     }
@@ -29,7 +29,7 @@ class CarModelController extends BaseController
     {
         abort_if($carModel->brand_id !== $brand->id, 404);
 
-        $carModel->update(['name' => $request->name]);
+        $carModel->update($request->only(['name', 'model_year']));
 
         return $this->success(new CarModelResource($carModel));
     }

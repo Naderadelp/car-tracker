@@ -40,7 +40,6 @@ class AuthController extends BaseController
                 'user_id'              => $user->id,
                 'brand_id'             => $request->brand_id,
                 'car_model_id'         => $request->car_model_id,
-                'year'                 => $request->year,
                 'current_km'           => $request->current_km,
                 'has_warranty'         => $request->has_warranty,
                 'warranty_limit_km'    => $request->warranty_limit_km,

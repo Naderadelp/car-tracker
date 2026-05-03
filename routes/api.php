@@ -5,8 +5,10 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarModelController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\FillUpController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TripController;
 use App\Http\Controllers\UserRoleController;
 
 Route::prefix('auth')->group(function () {
@@ -54,12 +56,21 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::put('brands/{brand}/car-models/{carModel}', [CarModelController::class, 'update']);
     Route::delete('brands/{brand}/car-models/{carModel}', [CarModelController::class, 'destroy']);
 
-    // Documents
     Route::prefix('cars/{car}')->group(function () {
+        // Documents
         Route::get('documents', [DocumentController::class, 'index']);
         Route::post('documents', [DocumentController::class, 'store']);
         Route::put('documents/{document}', [DocumentController::class, 'update']);
         Route::get('documents/{document}/file', [DocumentController::class, 'show']);
         Route::delete('documents/{document}', [DocumentController::class, 'destroy']);
+
+        // Fill-Ups
+        Route::get('fill-ups', [FillUpController::class, 'index']);
+        Route::post('fill-ups', [FillUpController::class, 'store']);
+        Route::delete('fill-ups/{fillUp}', [FillUpController::class, 'destroy']);
+
+        // Trips
+        Route::get('trips', [TripController::class, 'index']);
+        Route::post('trips', [TripController::class, 'store']);
     });
 });

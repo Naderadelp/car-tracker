@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('brand_id')->nullable()->constrained('brands')->nullOnDelete();
             $table->string('name');
+            $table->integer('model_year')->nullable();
             $table->timestamps();
-            $table->unique(['brand_id', 'name']);
         });
     }
 

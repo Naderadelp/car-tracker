@@ -21,7 +21,6 @@ class Car extends Model
         'user_id',
         'brand_id',
         'car_model_id',
-        'year',
         'current_km',
         'has_warranty',
         'warranty_limit_km',
@@ -31,7 +30,6 @@ class Car extends Model
     protected function casts(): array
     {
         return [
-            'year'                 => 'integer',
             'current_km'           => 'integer',
             'has_warranty'         => 'boolean',
             'warranty_limit_km'    => 'integer',

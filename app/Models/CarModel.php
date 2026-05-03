@@ -8,7 +8,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CarModel extends Model
 {
-    protected $fillable = ['brand_id', 'name'];
+    protected $fillable = ['brand_id', 'name', 'model_year'];
+
+    protected function casts(): array
+    {
+        return [
+            'model_year' => 'integer',
+        ];
+    }
 
     public function brand(): BelongsTo
     {

@@ -14,7 +14,6 @@ class CarResource extends JsonResource
             'user_id'              => $this->user_id,
             'brand_id'             => $this->brand_id,
             'car_model_id'         => $this->car_model_id,
-            'year'                 => $this->year,
             'current_km'           => $this->current_km,
             'has_warranty'         => $this->has_warranty,
             'warranty_limit_km'    => $this->warranty_limit_km,

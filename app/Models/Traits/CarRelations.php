@@ -4,8 +4,11 @@ namespace App\Models\Traits;
 
 use App\Models\Brand;
 use App\Models\CarModel;
+use App\Models\FillUp;
+use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait CarRelations
 {
@@ -22,5 +25,15 @@ trait CarRelations
     public function carModel(): BelongsTo
     {
         return $this->belongsTo(CarModel::class);
+    }
+
+    public function fillUps(): HasMany
+    {
+        return $this->hasMany(FillUp::class);
+    }
+
+    public function trips(): HasMany
+    {
+        return $this->hasMany(Trip::class);
     }
 }

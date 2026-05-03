@@ -14,6 +14,8 @@ class RolePermissionsSeeder extends Seeder
      */
     private array $models = [
         'car',
+        'fill-up',
+        'trip',
         'brand',
         'car-model',
         'document',

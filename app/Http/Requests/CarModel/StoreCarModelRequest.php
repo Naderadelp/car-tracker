@@ -16,10 +16,11 @@ class StoreCarModelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
+            'name'       => [
                 'required', 'string', 'max:100',
                 Rule::unique('car_models', 'name')->where('brand_id', $this->route('brand')->id),
             ],
+            'model_year' => ['nullable', 'integer', 'digits:4'],
         ];
     }
 }
