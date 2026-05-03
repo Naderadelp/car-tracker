@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CarModelController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
@@ -18,6 +20,10 @@ Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 });
+
+// Public lookup routes (used during registration)
+Route::get('brands', [BrandController::class, 'index']);
+Route::get('brands/{brand}/car-models', [CarModelController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function ()
 {
@@ -37,6 +43,16 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::get('users/{user}/roles', [UserRoleController::class, 'index']);
     Route::post('users/{user}/roles', [UserRoleController::class, 'store']);
     Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'destroy']);
+
+    // Brands & Car Models (admin management)
+    Route::post('brands', [BrandController::class, 'store']);
+    Route::get('brands/{brand}', [BrandController::class, 'show']);
+    Route::put('brands/{brand}', [BrandController::class, 'update']);
+    Route::delete('brands/{brand}', [BrandController::class, 'destroy']);
+
+    Route::post('brands/{brand}/car-models', [CarModelController::class, 'store']);
+    Route::put('brands/{brand}/car-models/{carModel}', [CarModelController::class, 'update']);
+    Route::delete('brands/{brand}/car-models/{carModel}', [CarModelController::class, 'destroy']);
 
     // Documents
     Route::prefix('cars/{car}')->group(function () {
