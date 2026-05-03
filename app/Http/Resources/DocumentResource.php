@@ -11,7 +11,7 @@ class DocumentResource extends JsonResource
     {
         return [
             'id'           => $this->id,
-            'vehicle_id'   => $this->vehicle_id,
+            'car_id'       => $this->car_id,
             'type'         => $this->type,
             'expiry_date'  => $this->expiry_date?->toDateString(),
             'created_at'   => $this->created_at->toISOString(),

@@ -7,7 +7,7 @@ use App\Repositories\Contracts\UserRepository;
 
 class UserRepositoryEloquent extends EloquentRepository implements UserRepository
 {
-    protected array $include = ['vehicles', 'documents'];
+    protected array $include = ['cars', 'documents'];
 
     public function model(): string
     {

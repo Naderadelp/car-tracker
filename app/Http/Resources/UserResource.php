@@ -14,7 +14,7 @@ class UserResource extends JsonResource
             'id'         => $this->id,
             'name'       => $this->name,
             'email'      => $this->email,
-            'vehicles'   => VehicleResource::collection($this->whenLoaded('vehicles')),
+            'cars'       => CarResource::collection($this->whenLoaded('cars')),
             'documents'  => DocumentResource::collection($this->whenLoaded('documents')),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),

@@ -8,9 +8,9 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Http\Resources\UserResource;
-use App\Http\Resources\VehicleResource;
+use App\Http\Resources\CarResource;
+use App\Repositories\Contracts\CarRepository;
 use App\Repositories\Contracts\UserRepository;
-use App\Repositories\Contracts\VehicleRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class AuthController extends BaseController
 {
     public function __construct(
         protected UserRepository $userRepository,
-        protected VehicleRepository $vehicleRepository,
+        protected CarRepository $carRepository,
     ) {}
 
     public function register(RegisterUserRequest $request): JsonResponse
@@ -36,12 +36,12 @@ class AuthController extends BaseController
                 'password' => $request->password,
             ]);
 
-            $vehicle = $this->vehicleRepository->create([
+            $car = $this->carRepository->create([
                 'user_id'              => $user->id,
-                'brand'                => $request->brand,
-                'model'                => $request->model,
+                'brand_id'             => $request->brand_id,
+                'car_model_id'         => $request->car_model_id,
                 'year'                 => $request->year,
-                'current_km'      => $request->current_km,
+                'current_km'           => $request->current_km,
                 'has_warranty'         => $request->has_warranty,
                 'warranty_limit_km'    => $request->warranty_limit_km,
                 'warranty_expiry_date' => $request->warranty_expiry_date,
@@ -53,7 +53,7 @@ class AuthController extends BaseController
 
             return $this->success([
                 'user'    => new UserResource($user),
-                'vehicle' => new VehicleResource($vehicle),
+                'car' => new CarResource($car),
                 'token'   => $token,
             ], 201, 'Account created successfully.');
         } catch (\Exception $e) {

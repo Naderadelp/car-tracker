@@ -2,21 +2,21 @@
 
 namespace App\Policies;
 
+use App\Models\Car;
 use App\Models\Document;
 use App\Models\User;
-use App\Models\Vehicle;
 
 class DocumentPolicy
 {
-    public function viewAny(User $user, Vehicle $vehicle): bool
+    public function viewAny(User $user, Car $car): bool
     {
-        return $user->id === $vehicle->user_id
+        return $user->id === $car->user_id
             || $user->hasPermissionTo('index-document');
     }
 
-    public function create(User $user, Vehicle $vehicle): bool
+    public function create(User $user, Car $car): bool
     {
-        return $user->id === $vehicle->user_id
+        return $user->id === $car->user_id
             || $user->hasPermissionTo('create-document');
     }
 

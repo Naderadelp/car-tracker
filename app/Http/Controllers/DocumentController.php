@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Document\StoreDocumentRequest;
 use App\Http\Requests\Document\UpdateDocumentRequest;
 use App\Http\Resources\DocumentResource;
+use App\Models\Car;
 use App\Models\Document;
-use App\Models\Vehicle;
 use App\Repositories\Contracts\DocumentRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,26 +19,26 @@ class DocumentController extends BaseController
         protected DocumentRepository $documentRepository,
     ) {}
 
-    public function index(Request $request, Vehicle $vehicle): JsonResponse
+    public function index(Request $request, Car $car): JsonResponse
     {
-        $this->authorize('viewAny', [Document::class, $vehicle]);
+        $this->authorize('viewAny', [Document::class, $car]);
 
         $documents = $this->documentRepository
-            ->where('vehicle_id', $vehicle->id)
+            ->where('car_id', $car->id)
             ->spatie()
             ->paginate();
 
         return $this->paginated($documents, DocumentResource::class);
     }
 
-    public function store(StoreDocumentRequest $request, Vehicle $vehicle): JsonResponse
+    public function store(StoreDocumentRequest $request, Car $car): JsonResponse
     {
         try {
             DB::beginTransaction();
 
             $document = $this->documentRepository->create([
                 'user_id'     => auth()->id(),
-                'vehicle_id'  => $vehicle->id,
+                'car_id'  => $car->id,
                 'type'        => $request->type,
                 'expiry_date' => $request->expiry_date,
             ]);
@@ -56,9 +56,9 @@ class DocumentController extends BaseController
         }
     }
 
-    public function update(UpdateDocumentRequest $request, Vehicle $vehicle, Document $document): JsonResponse
+    public function update(UpdateDocumentRequest $request, Car $car, Document $document): JsonResponse
     {
-        abort_if($document->vehicle_id !== $vehicle->id, 404);
+        abort_if($document->car_id !== $car->id, 404);
 
         try {
             DB::beginTransaction();
@@ -85,11 +85,11 @@ class DocumentController extends BaseController
         }
     }
 
-    public function show(Request $request, Vehicle $vehicle, Document $document): StreamedResponse
+    public function show(Request $request, Car $car, Document $document): StreamedResponse
     {
         $this->authorize('secureDownload', $document);
 
-        abort_if($document->vehicle_id !== $vehicle->id, 404, 'No media file found for this document.');
+        abort_if($document->car_id !== $car->id, 404, 'No media file found for this document.');
 
         $media = $document->getFirstMedia('vehicle_documents');
 
@@ -102,11 +102,11 @@ class DocumentController extends BaseController
         );
     }
 
-    public function destroy(Request $request, Vehicle $vehicle, Document $document): JsonResponse
+    public function destroy(Request $request, Car $car, Document $document): JsonResponse
     {
         $this->authorize('delete', $document);
 
-        abort_if($document->vehicle_id !== $vehicle->id, 404);
+        abort_if($document->car_id !== $car->id, 404);
 
         $this->documentRepository->delete($document->id);
 

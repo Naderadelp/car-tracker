@@ -2,8 +2,8 @@
 
 namespace App\Models\Traits;
 
+use App\Models\Car;
 use App\Models\User;
-use App\Models\Vehicle;
 
 trait DocumentRelations
 {
@@ -12,8 +12,8 @@ trait DocumentRelations
         return $this->belongsTo(User::class);
     }
 
-    public function vehicle()
+    public function car()
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsTo(Car::class);
     }
 }

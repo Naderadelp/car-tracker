@@ -13,7 +13,7 @@ class RolePermissionsSeeder extends Seeder
      * All domain models that receive standard CRUD permissions.
      */
     private array $models = [
-        'vehicle',
+        'car',
         'document',
         'user',
         'role',

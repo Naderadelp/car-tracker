@@ -29,7 +29,7 @@ class Document extends Model implements HasMedia
 
     protected $fillable = [
         'user_id',
-        'vehicle_id',
+        'car_id',
         'type',
         'expiry_date',
     ];

@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'destroy']);
 
     // Documents
-    Route::prefix('vehicles/{vehicle}')->group(function () {
+    Route::prefix('cars/{car}')->group(function () {
         Route::get('documents', [DocumentController::class, 'index']);
         Route::post('documents', [DocumentController::class, 'store']);
         Route::put('documents/{document}', [DocumentController::class, 'update']);

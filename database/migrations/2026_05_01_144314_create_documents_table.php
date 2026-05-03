@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->nullOnDelete()->constrained('users');
-            $table->foreignId('vehicle_id')->nullable()->nullOnDelete()->constrained('vehicles');
+            $table->foreignId('car_id')->nullable()->nullOnDelete()->constrained('cars');
             $table->enum('type', [
                 'vehicle_license',
                 'insurance_policy',

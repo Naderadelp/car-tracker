@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('vehicles', function (Blueprint $table) {
+        Schema::create('cars', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('brand', 100);
-            $table->string('model', 100);
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('brand_id')->nullable()->constrained('brands')->nullOnDelete();
+            $table->foreignId('car_model_id')->nullable()->constrained('car_models')->nullOnDelete();
             $table->integer('year');
             $table->integer('current_km')->default(0);
             $table->boolean('has_warranty')->default(false);
@@ -25,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('vehicles');
+        Schema::dropIfExists('cars');
     }
 };

@@ -2,14 +2,16 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Vehicle;
-use App\Repositories\Contracts\VehicleRepository;
+use App\Models\Car;
+use App\Repositories\Contracts\CarRepository;
 
-class VehicleRepositoryEloquent extends EloquentRepository implements VehicleRepository
+class CarRepositoryEloquent extends EloquentRepository implements CarRepository
 {
+    protected array $allowedIncludes = ['brand', 'carModel'];
+
     public function model(): string
     {
-        return Vehicle::class;
+        return Car::class;
     }
 
     protected function scopeToUser(): void

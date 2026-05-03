@@ -6,21 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
-use App\Models\Traits\VehicleRelations;
+use App\Models\Traits\CarRelations;
 
-class Vehicle extends Model
+class Car extends Model
 {
-    use LogsActivity, SoftDeletes, VehicleRelations;
+    use LogsActivity, SoftDeletes, CarRelations;
 
     public static $logAttributes = ['*'];
-    protected static $logName = 'Vehicle';
+    protected static $logName = 'Car';
 
-    protected $table = 'vehicles';
+    protected $table = 'cars';
 
     protected $fillable = [
         'user_id',
-        'brand',
-        'model',
+        'brand_id',
+        'car_model_id',
         'year',
         'current_km',
         'has_warranty',
@@ -32,7 +32,7 @@ class Vehicle extends Model
     {
         return [
             'year'                 => 'integer',
-            'current_km'      => 'integer',
+            'current_km'           => 'integer',
             'has_warranty'         => 'boolean',
             'warranty_limit_km'    => 'integer',
             'warranty_expiry_date' => 'date',

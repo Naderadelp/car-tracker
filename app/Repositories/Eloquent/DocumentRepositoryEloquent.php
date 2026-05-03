@@ -15,7 +15,7 @@ class DocumentRepositoryEloquent extends EloquentRepository implements DocumentR
     protected array $allowedFiltersExact = [
         'type',
         'user_id',
-        'vehicle_id',
+        'car_id',
     ];
 
     protected array $allowedSorts = ['created_at', 'id'];
