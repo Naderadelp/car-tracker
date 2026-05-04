@@ -15,10 +15,9 @@ class StoreTripRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'coordinates'              => ['required', 'array', 'min:2'],
-            'coordinates.*.lat'        => ['required', 'numeric', 'between:-90,90'],
-            'coordinates.*.lng'        => ['required', 'numeric', 'between:-180,180'],
-            'coordinates.*.timestamp'  => ['required', 'date'],
+            'coordinates'        => ['required', 'array', 'min:2'],
+            'coordinates.*.lat'  => ['required', 'numeric', 'between:-90,90'],
+            'coordinates.*.lng'  => ['required', 'numeric', 'between:-180,180'],
         ];
     }
 }

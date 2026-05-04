@@ -11,8 +11,6 @@ return new class extends Migration
         Schema::create('trips', function (Blueprint $table) {
             $table->id();
             $table->foreignId('car_id')->constrained('cars')->cascadeOnDelete();
-            $table->dateTime('start_time');
-            $table->dateTime('end_time');
             $table->decimal('start_lat', 10, 8);
             $table->decimal('start_lng', 11, 8);
             $table->decimal('end_lat', 10, 8);

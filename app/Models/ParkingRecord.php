@@ -7,32 +7,30 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-class Trip extends Model
+class ParkingRecord extends Model
 {
     use LogsActivity;
 
     public static $logAttributes = ['*'];
-    protected static $logName = 'Trip';
+    protected static $logName = 'ParkingRecord';
 
-    protected $table = 'trips';
+    protected $table = 'parking_records';
 
     protected $fillable = [
         'car_id',
-        'start_lat',
-        'start_lng',
-        'end_lat',
-        'end_lng',
-        'total_distance_km',
+        'name',
+        'description',
+        'latitude',
+        'longitude',
+        'parked_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'start_lat'         => 'decimal:8',
-            'start_lng'         => 'decimal:8',
-            'end_lat'           => 'decimal:8',
-            'end_lng'           => 'decimal:8',
-            'total_distance_km' => 'decimal:2',
+            'parked_at' => 'datetime',
+            'latitude'  => 'decimal:8',
+            'longitude' => 'decimal:8',
         ];
     }
 

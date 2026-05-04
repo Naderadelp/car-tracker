@@ -51,8 +51,6 @@ class TripController extends BaseController
 
             $trip = $this->tripRepository->create([
                 'car_id'            => $car->id,
-                'start_time'        => $first['timestamp'],
-                'end_time'          => $last['timestamp'],
                 'start_lat'         => $first['lat'],
                 'start_lng'         => $first['lng'],
                 'end_lat'           => $last['lat'],

@@ -8,8 +8,8 @@ use App\Repositories\Contracts\TripRepository;
 class TripRepositoryEloquent extends EloquentRepository implements TripRepository
 {
     protected array $allowedFiltersExact = ['car_id'];
-    protected array $allowedSorts        = ['start_time', 'total_distance_km'];
-    protected array $allowedDefaultSorts = ['-start_time'];
+    protected array $allowedSorts        = ['total_distance_km', 'created_at'];
+    protected array $allowedDefaultSorts = ['-id'];
 
     public function model(): string
     {
