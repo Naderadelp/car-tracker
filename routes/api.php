@@ -6,6 +6,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarModelController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FillUpController;
+use App\Http\Controllers\ParkingRecordController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TripController;
@@ -72,5 +73,11 @@ Route::middleware('auth:sanctum')->group(function ()
         // Trips
         Route::get('trips', [TripController::class, 'index']);
         Route::post('trips', [TripController::class, 'store']);
+
+        // Parking Records
+        Route::get   ('parking-records/current',         [ParkingRecordController::class, 'current']);
+        Route::get   ('parking-records',                 [ParkingRecordController::class, 'index']);
+        Route::post  ('parking-records',                 [ParkingRecordController::class, 'store']);
+        Route::delete('parking-records/{parkingRecord}', [ParkingRecordController::class, 'destroy']);
     });
 });

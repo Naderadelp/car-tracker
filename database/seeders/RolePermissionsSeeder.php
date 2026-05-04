@@ -16,6 +16,7 @@ class RolePermissionsSeeder extends Seeder
         'car',
         'fill-up',
         'trip',
+        'parking-record',
         'brand',
         'car-model',
         'document',
