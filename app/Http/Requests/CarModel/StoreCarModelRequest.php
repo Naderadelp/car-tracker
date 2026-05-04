@@ -4,7 +4,6 @@ namespace App\Http\Requests\CarModel;
 
 use App\Models\CarModel;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreCarModelRequest extends FormRequest
 {
@@ -16,10 +15,7 @@ class StoreCarModelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'       => [
-                'required', 'string', 'max:100',
-                Rule::unique('car_models', 'name')->where('brand_id', $this->route('brand')->id),
-            ],
+            'name'       => ['required', 'string', 'max:100'],
             'model_year' => ['nullable', 'integer', 'digits:4'],
         ];
     }
