@@ -9,7 +9,11 @@ use App\Http\Controllers\FillUpController;
 use App\Http\Controllers\ParkingRecordController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ServiceCenterController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TripController;
+use App\Http\Controllers\UpcomingServiceController;
 use App\Http\Controllers\UserRoleController;
 
 Route::prefix('auth')->group(function () {
@@ -57,6 +61,30 @@ Route::middleware('auth:sanctum')->group(function ()
     Route::put('brands/{brand}/car-models/{carModel}', [CarModelController::class, 'update']);
     Route::delete('brands/{brand}/car-models/{carModel}', [CarModelController::class, 'destroy']);
 
+    // Items (master parts inventory)
+    Route::get   ('items',        [ItemController::class, 'index']);
+    Route::post  ('items',        [ItemController::class, 'store']);
+    Route::get   ('items/{item}', [ItemController::class, 'show']);
+    Route::match (['put', 'patch'], 'items/{item}', [ItemController::class, 'update']);
+    Route::delete('items/{item}', [ItemController::class, 'destroy']);
+
+    // Service centers (per brand) — full CRUD
+    Route::get   ('brands/{brand}/service-centers',                 [ServiceCenterController::class, 'index']);
+    Route::post  ('brands/{brand}/service-centers',                 [ServiceCenterController::class, 'store']);
+    Route::get   ('brands/{brand}/service-centers/{serviceCenter}', [ServiceCenterController::class, 'show']);
+    Route::match (['put', 'patch'], 'brands/{brand}/service-centers/{serviceCenter}', [ServiceCenterController::class, 'update']);
+    Route::delete('brands/{brand}/service-centers/{serviceCenter}', [ServiceCenterController::class, 'destroy']);
+
+    // Catalogue services (admin) — full CRUD
+    Route::get   ('services',                       [ServiceController::class, 'index']);
+    Route::post  ('services',                       [ServiceController::class, 'storeCatalogue']);
+    Route::get   ('services/{service}',             [ServiceController::class, 'show']);
+    Route::match (['put', 'patch'], 'services/{service}', [ServiceController::class, 'update']);
+    Route::delete('services/{service}',             [ServiceController::class, 'destroy']);
+
+    // User-service create (per car)
+    Route::post('cars/{car}/services', [ServiceController::class, 'store']);
+
     Route::prefix('cars/{car}')->group(function () {
         // Documents
         Route::get('documents', [DocumentController::class, 'index']);
@@ -73,6 +101,9 @@ Route::middleware('auth:sanctum')->group(function ()
         // Trips
         Route::get('trips', [TripController::class, 'index']);
         Route::post('trips', [TripController::class, 'store']);
+
+        // Upcoming maintenance
+        Route::get('upcoming-services', [UpcomingServiceController::class, 'index']);
 
         // Parking Records
         Route::get   ('parking-records/current',         [ParkingRecordController::class, 'current']);
