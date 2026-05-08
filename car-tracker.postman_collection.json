@@ -1,0 +1,711 @@
+{
+  "info": {
+    "name": "Car Tracker API",
+    "description": "Postman collection for the Car Tracker Laravel API. Set `base_url` and `token` collection variables before running protected requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "car-tracker-collection-001"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "brand_id", "value": "1", "type": "string" },
+    { "key": "car_model_id", "value": "1", "type": "string" },
+    { "key": "car_id", "value": "1", "type": "string" },
+    { "key": "user_id", "value": "1", "type": "string" },
+    { "key": "role_id", "value": "1", "type": "string" },
+    { "key": "permission_name", "value": "manage-cars", "type": "string" },
+    { "key": "item_id", "value": "1", "type": "string" },
+    { "key": "service_id", "value": "1", "type": "string" },
+    { "key": "service_center_id", "value": "1", "type": "string" },
+    { "key": "document_id", "value": "1", "type": "string" },
+    { "key": "fill_up_id", "value": "1", "type": "string" },
+    { "key": "parking_record_id", "value": "1", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"brand_id\": 1,\n  \"car_model_id\": 1,\n  \"current_km\": 25000,\n  \"has_warranty\": true,\n  \"warranty_limit_km\": 100000,\n  \"warranty_expiry_date\": \"2027-12-31\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  const token = data.data && data.data.token ? data.data.token : data.token;",
+                  "  if (token) { pm.collectionVariables.set('token', token); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"device_name\": \"postman\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/forgot-password", "host": ["{{base_url}}"], "path": ["auth", "forgot-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/reset-password", "host": ["{{base_url}}"], "path": ["auth", "reset-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-here\",\n  \"email\": \"john@example.com\",\n  \"password\": \"newpassword123\",\n  \"password_confirmation\": \"newpassword123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/user", "host": ["{{base_url}}"], "path": ["auth", "user"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "List Brands (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands", "host": ["{{base_url}}"], "path": ["brands"] }
+          }
+        },
+        {
+          "name": "Show Brand",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}"] }
+          }
+        },
+        {
+          "name": "Create Brand",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/brands", "host": ["{{base_url}}"], "path": ["brands"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Toyota\"\n}" }
+          }
+        },
+        {
+          "name": "Update Brand",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Toyota Updated\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Brand",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Car Models",
+      "item": [
+        {
+          "name": "List Car Models for Brand (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/car-models", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "car-models"] }
+          }
+        },
+        {
+          "name": "Create Car Model",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/car-models", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "car-models"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Corolla\",\n  \"model_year\": 2024\n}" }
+          }
+        },
+        {
+          "name": "Update Car Model",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/car-models/{{car_model_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "car-models", "{{car_model_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Corolla LE\",\n  \"model_year\": 2025\n}" }
+          }
+        },
+        {
+          "name": "Delete Car Model",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/car-models/{{car_model_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "car-models", "{{car_model_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles & Permissions",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/roles", "host": ["{{base_url}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "Show Role",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/roles/{{role_id}}", "host": ["{{base_url}}"], "path": ["roles", "{{role_id}}"] }
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/roles", "host": ["{{base_url}}"], "path": ["roles"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"editor\"\n}" }
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/roles/{{role_id}}", "host": ["{{base_url}}"], "path": ["roles", "{{role_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"editor-updated\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/roles/{{role_id}}", "host": ["{{base_url}}"], "path": ["roles", "{{role_id}}"] }
+          }
+        },
+        {
+          "name": "Sync Role Permissions",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/roles/{{role_id}}/permissions", "host": ["{{base_url}}"], "path": ["roles", "{{role_id}}", "permissions"] },
+            "body": { "mode": "raw", "raw": "{\n  \"permissions\": [\"manage-cars\", \"manage-brands\"]\n}" }
+          }
+        },
+        {
+          "name": "Revoke Role Permission",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/roles/{{role_id}}/permissions/{{permission_name}}", "host": ["{{base_url}}"], "path": ["roles", "{{role_id}}", "permissions", "{{permission_name}}"] }
+          }
+        },
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/permissions", "host": ["{{base_url}}"], "path": ["permissions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Roles",
+      "item": [
+        {
+          "name": "List User Roles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/roles", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}", "roles"] }
+          }
+        },
+        {
+          "name": "Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/roles", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}", "roles"] },
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"admin\"\n}" }
+          }
+        },
+        {
+          "name": "Remove Role from User",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/roles/{{role_id}}", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}", "roles", "{{role_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Items",
+      "item": [
+        {
+          "name": "List Items",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/items", "host": ["{{base_url}}"], "path": ["items"] }
+          }
+        },
+        {
+          "name": "Show Item",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/items/{{item_id}}", "host": ["{{base_url}}"], "path": ["items", "{{item_id}}"] }
+          }
+        },
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/items", "host": ["{{base_url}}"], "path": ["items"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Oil Filter\",\n  \"price\": 150.00\n}" }
+          }
+        },
+        {
+          "name": "Update Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/items/{{item_id}}", "host": ["{{base_url}}"], "path": ["items", "{{item_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Premium Oil Filter\",\n  \"price\": 200.00\n}" }
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/items/{{item_id}}", "host": ["{{base_url}}"], "path": ["items", "{{item_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Centers",
+      "item": [
+        {
+          "name": "List Service Centers (per brand)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/service-centers", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "service-centers"] }
+          }
+        },
+        {
+          "name": "Show Service Center",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/service-centers/{{service_center_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "service-centers", "{{service_center_id}}"] }
+          }
+        },
+        {
+          "name": "Create Service Center",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/service-centers", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "service-centers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main Service Center\",\n  \"address\": \"123 Main St, Cairo\",\n  \"open_at\": \"08:00\",\n  \"close_at\": \"18:00\",\n  \"mobile\": \"+201234567890\",\n  \"lat\": 30.0444,\n  \"lng\": 31.2357\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Service Center",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/service-centers/{{service_center_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "service-centers", "{{service_center_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Service Center\",\n  \"close_at\": \"20:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Service Center",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/brands/{{brand_id}}/service-centers/{{service_center_id}}", "host": ["{{base_url}}"], "path": ["brands", "{{brand_id}}", "service-centers", "{{service_center_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services (Catalogue)",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/services", "host": ["{{base_url}}"], "path": ["services"] }
+          }
+        },
+        {
+          "name": "Show Service",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/services/{{service_id}}", "host": ["{{base_url}}"], "path": ["services", "{{service_id}}"] }
+          }
+        },
+        {
+          "name": "Create Catalogue Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/services", "host": ["{{base_url}}"], "path": ["services"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"km\": 10000,\n  \"price\": 500.00,\n  \"car_model_id\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/services/{{service_id}}", "host": ["{{base_url}}"], "path": ["services", "{{service_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"km\": 15000,\n  \"price\": 600.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/services/{{service_id}}", "host": ["{{base_url}}"], "path": ["services", "{{service_id}}"] }
+          }
+        },
+        {
+          "name": "Create Service for Car",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/services", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "services"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"km\": 10000,\n  \"price\": 500.00\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Car Documents",
+      "item": [
+        {
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/documents", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "documents"] }
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/documents", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "documents"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "type", "value": "license", "type": "text" },
+                { "key": "expiry_date", "value": "2027-01-01", "type": "text" },
+                { "key": "document_file", "type": "file", "src": [] }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Document",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/documents/{{document_id}}", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "documents", "{{document_id}}"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "type", "value": "license", "type": "text" },
+                { "key": "expiry_date", "value": "2028-01-01", "type": "text" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download Document File",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/documents/{{document_id}}/file", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "documents", "{{document_id}}", "file"] }
+          }
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/documents/{{document_id}}", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "documents", "{{document_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fill-Ups",
+      "item": [
+        {
+          "name": "List Fill-Ups",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/fill-ups", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "fill-ups"] }
+          }
+        },
+        {
+          "name": "Create Fill-Up",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/fill-ups", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "fill-ups"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"liters\": 40.5,\n  \"cost_egp\": 500.00,\n  \"fill_date\": \"2026-05-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Fill-Up",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/fill-ups/{{fill_up_id}}", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "fill-ups", "{{fill_up_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trips",
+      "item": [
+        {
+          "name": "List Trips",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/trips", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "trips"] }
+          }
+        },
+        {
+          "name": "Create Trip",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/trips", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "trips"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coordinates\": [\n    { \"lat\": 30.0444, \"lng\": 31.2357 },\n    { \"lat\": 30.0500, \"lng\": 31.2400 }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upcoming Services",
+      "item": [
+        {
+          "name": "List Upcoming Services",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/upcoming-services", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "upcoming-services"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parking Records",
+      "item": [
+        {
+          "name": "Current Parking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/parking-records/current", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "parking-records", "current"] }
+          }
+        },
+        {
+          "name": "List Parking Records",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/parking-records", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "parking-records"] }
+          }
+        },
+        {
+          "name": "Create Parking Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/parking-records", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "parking-records"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mall Parking B2\",\n  \"description\": \"Near elevator\",\n  \"latitude\": 30.0444,\n  \"longitude\": 31.2357,\n  \"parked_at\": \"2026-05-06 14:30:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Parking Record",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cars/{{car_id}}/parking-records/{{parking_record_id}}", "host": ["{{base_url}}"], "path": ["cars", "{{car_id}}", "parking-records", "{{parking_record_id}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
