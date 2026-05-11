@@ -27,7 +27,7 @@ class ServiceCenterController extends BaseController
             (float) $request->lng,
         );
 
-        return $this->success(ServiceCenterResource::collection($centers));
+        return $this->paginated($centers, ServiceCenterResource::class);
     }
 
     public function show(Request $request, Brand $brand, ServiceCenter $serviceCenter): JsonResponse

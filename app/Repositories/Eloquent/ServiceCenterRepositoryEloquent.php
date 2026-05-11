@@ -4,7 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\ServiceCenter;
 use App\Repositories\Contracts\ServiceCenterRepository;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ServiceCenterRepositoryEloquent extends EloquentRepository implements ServiceCenterRepository
 {
@@ -19,7 +19,7 @@ class ServiceCenterRepositoryEloquent extends EloquentRepository implements Serv
         return ServiceCenter::class;
     }
 
-    public function nearby(int $brandId, float $lat, float $lng): Collection
+    public function nearby(int $brandId, float $lat, float $lng): LengthAwarePaginator
     {
         return app($this->model())->newQuery()
             ->where('brand_id', $brandId)
@@ -32,6 +32,6 @@ class ServiceCenterRepositoryEloquent extends EloquentRepository implements Serv
                 ))) AS distance_km
             ', [$lat, $lat, $lng])
             ->orderBy('distance_km')
-            ->get();
+            ->paginate();
     }
 }

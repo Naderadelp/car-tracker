@@ -14,9 +14,9 @@ class UserRoleController extends BaseController
     {
         $this->authorize('index-user');
 
-        $user->load('roles.permissions');
+        $roles = $user->roles()->with('permissions')->paginate();
 
-        return $this->success(RoleResource::collection($user->roles));
+        return $this->paginated($roles, RoleResource::class);
     }
 
     public function store(AssignRoleRequest $request, User $user): JsonResponse

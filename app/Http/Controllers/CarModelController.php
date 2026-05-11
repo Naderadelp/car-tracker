@@ -13,9 +13,9 @@ class CarModelController extends BaseController
 {
     public function index(Brand $brand): JsonResponse
     {
-        $models = $brand->carModels()->orderBy('name')->get();
+        $models = $brand->carModels()->orderBy('name')->paginate();
 
-        return $this->success(CarModelResource::collection($models));
+        return $this->paginated($models, CarModelResource::class);
     }
 
     public function store(StoreCarModelRequest $request, Brand $brand): JsonResponse
