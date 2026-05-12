@@ -31,6 +31,7 @@ Route::prefix('auth')->group(function () {
 // Public lookup routes (used during registration)
 Route::get('brands', [BrandController::class, 'index']);
 Route::get('brands/{brand}/car-models', [CarModelController::class, 'index']);
+Route::get('brands/{brand}/car-model-names', [CarModelController::class, 'names']);
 
 Route::middleware('auth:sanctum')->group(function ()
 {
