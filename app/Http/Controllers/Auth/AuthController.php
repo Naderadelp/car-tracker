@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\CarResource;
+use App\Models\CarModel;
 use App\Repositories\Contracts\CarRepository;
 use App\Repositories\Contracts\UserRepository;
 use Illuminate\Http\JsonResponse;
@@ -36,15 +37,22 @@ class AuthController extends BaseController
                 'password' => $request->password,
             ]);
 
+            $carModelId = CarModel::where('brand_id', $request->brand_id)
+                ->where('name', $request->car_model_name)
+                ->where('model_year', $request->model_year)
+                ->value('id');
+
             $car = $this->carRepository->create([
                 'user_id'              => $user->id,
                 'brand_id'             => $request->brand_id,
-                'car_model_id'         => $request->car_model_id,
+                'car_model_id'         => $carModelId,
                 'current_km'           => $request->current_km,
                 'has_warranty'         => $request->has_warranty,
                 'warranty_limit_km'    => $request->warranty_limit_km,
                 'warranty_expiry_date' => $request->warranty_expiry_date,
             ]);
+
+            $car = $this->carRepository->find($car->id);
 
             DB::commit();
 

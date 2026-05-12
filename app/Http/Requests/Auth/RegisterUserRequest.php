@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class RegisterUserRequest extends FormRequest
 {
@@ -18,7 +19,14 @@ class RegisterUserRequest extends FormRequest
             'email'                => ['required', 'email', 'max:255', 'unique:users,email'],
             'password'             => ['required', 'string', 'min:8'],
             'brand_id'             => ['required', 'integer', 'exists:brands,id'],
-            'car_model_id'         => ['required', 'integer', 'exists:car_models,id'],
+            'car_model_name'       => [
+                'required', 'string', 'max:100',
+                Rule::exists('car_models', 'name')->where(function ($query) {
+                    $query->where('brand_id', $this->input('brand_id'))
+                          ->where('model_year', $this->input('model_year'));
+                }),
+            ],
+            'model_year'           => ['required', 'integer', 'digits:4'],
             'current_km'           => ['required', 'integer', 'min:0'],
             'has_warranty'         => ['required', 'boolean'],
             'warranty_limit_km'    => ['required_if:has_warranty,true', 'nullable', 'integer'],
