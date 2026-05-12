@@ -22,7 +22,7 @@ class StoreCarModelRequest extends FormRequest
                     ->where('brand_id', $this->route('brand')->id)
                     ->where('model_year', $this->input('model_year')),
             ],
-            'model_year' => ['nullable', 'integer', 'digits:4'],
+            'model_year' => ['required', 'integer', 'digits:4'],
         ];
     }
 }

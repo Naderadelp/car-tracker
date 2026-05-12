@@ -23,7 +23,7 @@ class UpdateCarModelRequest extends FormRequest
                     ->where('model_year', $this->input('model_year'))
                     ->ignore($this->route('carModel')->id),
             ],
-            'model_year' => ['nullable', 'integer', 'digits:4'],
+            'model_year' => ['required', 'integer', 'digits:4'],
         ];
     }
 }
