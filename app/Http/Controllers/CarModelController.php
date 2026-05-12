@@ -43,6 +43,26 @@ class CarModelController extends BaseController
         return $this->success(['data' => $names]);
     }
 
+    public function years(Brand $brand, \Illuminate\Http\Request $request): JsonResponse
+    {
+        $name = $request->query('name');
+
+        if (!is_string($name) || $name === '') {
+            return $this->error('The name query parameter is required.', 422);
+        }
+
+        $years = $brand->carModels()
+            ->where('name', $name)
+            ->whereNotNull('model_year')
+            ->orderByDesc('model_year')
+            ->distinct()
+            ->pluck('model_year')
+            ->map(fn (int $year) => ['year' => $year])
+            ->values();
+
+        return $this->success(['data' => $years]);
+    }
+
     public function store(StoreCarModelRequest $request, Brand $brand): JsonResponse
     {
         $carModel = $brand->carModels()->create($request->only(['name', 'model_year']));

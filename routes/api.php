@@ -32,6 +32,7 @@ Route::prefix('auth')->group(function () {
 Route::get('brands', [BrandController::class, 'index']);
 Route::get('brands/{brand}/car-models', [CarModelController::class, 'index']);
 Route::get('brands/{brand}/car-model-names', [CarModelController::class, 'names']);
+Route::get('brands/{brand}/car-model-years', [CarModelController::class, 'years']);
 
 Route::middleware('auth:sanctum')->group(function ()
 {
