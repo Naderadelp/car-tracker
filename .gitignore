@@ -1,7 +1,7 @@
 Spec Kit/
 # .specify/
 .claude/
-specs/
+/specs/
 
 # Laravel / PHP
 /vendor/

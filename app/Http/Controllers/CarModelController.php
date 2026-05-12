@@ -11,11 +11,36 @@ use Illuminate\Http\JsonResponse;
 
 class CarModelController extends BaseController
 {
-    public function index(Brand $brand): JsonResponse
+    public function index(Brand $brand, \Illuminate\Http\Request $request): JsonResponse
     {
+        $name = $request->query('name');
+
+        if (is_string($name) && $name !== '') {
+            $models = $brand->carModels()
+                ->where('name', $name)
+                ->whereNotNull('model_year')
+                ->orderByDesc('model_year')
+                ->get();
+
+            return $this->success(['data' => CarModelResource::collection($models)]);
+        }
+
         $models = $brand->carModels()->orderBy('name')->paginate();
 
         return $this->paginated($models, CarModelResource::class);
+    }
+
+    public function names(Brand $brand): JsonResponse
+    {
+        $names = $brand->carModels()
+            ->whereNotNull('model_year')
+            ->orderBy('name')
+            ->distinct()
+            ->pluck('name')
+            ->map(fn (string $name) => ['name' => $name])
+            ->values();
+
+        return $this->success(['data' => $names]);
     }
 
     public function store(StoreCarModelRequest $request, Brand $brand): JsonResponse
