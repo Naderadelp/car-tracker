@@ -4,19 +4,22 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
-use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Requests\Auth\ResendVerificationRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Http\Resources\CarResource;
+use App\Http\Resources\UserResource;
 use App\Models\CarModel;
+use App\Models\EmailOtp;
 use App\Repositories\Contracts\CarRepository;
 use App\Repositories\Contracts\UserRepository;
+use App\Services\EmailOtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends BaseController
@@ -24,6 +27,7 @@ class AuthController extends BaseController
     public function __construct(
         protected UserRepository $userRepository,
         protected CarRepository $carRepository,
+        protected EmailOtpService $otpService,
     ) {}
 
     public function register(RegisterUserRequest $request): JsonResponse
@@ -36,6 +40,8 @@ class AuthController extends BaseController
                 'email'    => $request->email,
                 'password' => $request->password,
             ]);
+
+            $user->assignRole('user');
 
             $carModelId = CarModel::where('brand_id', $request->brand_id)
                 ->where('name', $request->car_model_name)
@@ -55,19 +61,50 @@ class AuthController extends BaseController
             $car = $this->carRepository->find($car->id);
 
             DB::commit();
-
-            $token = $user->createToken('mobile_app_token')->plainTextToken;
-
-            return $this->success([
-                'user'    => new UserResource($user),
-                'car' => new CarResource($car),
-                'token'   => $token,
-            ], 201, 'Account created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return $this->error($e->getMessage(), 422);
         }
+
+        $this->otpService->send($request->email, EmailOtp::PURPOSE_REGISTER);
+
+        return $this->success([
+            'user' => new UserResource($user),
+            'car'  => new CarResource($car),
+        ], 201, 'Account created. Check your email for the verification code.');
+    }
+
+    public function verifyEmail(VerifyEmailRequest $request): JsonResponse
+    {
+        $user = $this->userRepository->findWhereFirst(['email' => $request->email]);
+
+        if ($user->email_verified_at) {
+            throw ValidationException::withMessages([
+                'email' => ['Email is already verified.'],
+            ]);
+        }
+
+        $this->otpService->verify($request->email, EmailOtp::PURPOSE_REGISTER, $request->otp);
+
+        $this->userRepository->update(['email_verified_at' => now()], $user->id);
+
+        return $this->success(['message' => 'Email verified successfully.'], 200);
+    }
+
+    public function resendVerification(ResendVerificationRequest $request): JsonResponse
+    {
+        $user = $this->userRepository->findWhereFirst(['email' => $request->email]);
+
+        if ($user->email_verified_at) {
+            throw ValidationException::withMessages([
+                'email' => ['Email is already verified.'],
+            ]);
+        }
+
+        $this->otpService->send($request->email, EmailOtp::PURPOSE_REGISTER);
+
+        return $this->success([], 200, 'Verification code sent.');
     }
 
     public function login(LoginUserRequest $request): JsonResponse
@@ -77,6 +114,12 @@ class AuthController extends BaseController
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
+            ]);
+        }
+
+        if (! $user->email_verified_at) {
+            throw ValidationException::withMessages([
+                'email' => ['Please verify your email before logging in.'],
             ]);
         }
 
@@ -104,37 +147,18 @@ class AuthController extends BaseController
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        // Build a deep link so the mobile app can handle the reset natively
-        Password::createUrlUsing(function ($notifiable, string $token) {
-            return config('app.mobile_scheme') . '://reset-password?token=' . $token . '&email=' . urlencode($notifiable->getEmailForPasswordReset());
-        });
+        $this->otpService->send($request->email, EmailOtp::PURPOSE_RESET);
 
-        $status = Password::sendResetLink(['email' => $request->email]);
-
-        if ($status !== Password::RESET_LINK_SENT) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
-        }
-
-        return $this->success([], 200, __($status));
+        return $this->success([], 200, 'Verification code sent.');
     }
 
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, string $password) {
-                $user->forceFill(['password' => $password])->save();
-            }
-        );
+        $this->otpService->verify($request->email, EmailOtp::PURPOSE_RESET, $request->otp);
 
-        if ($status !== Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
-        }
+        $user = $this->userRepository->findWhereFirst(['email' => $request->email]);
+        $this->userRepository->update(['password' => Hash::make($request->password)], $user->id);
 
-        return $this->success([], 200, __($status));
+        return $this->success([], 200, 'Password has been reset.');
     }
 }
