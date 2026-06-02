@@ -16,6 +16,9 @@ class FillUpResource extends JsonResource
             'odometer'   => $this->odometer,
             'cost_egp'   => $this->cost_egp,
             'fill_date'  => $this->fill_date?->toDateString(),
+            'fuel_type'   => $this->fuel_type,
+            'station_lat' => $this->station_lat,
+            'station_lng' => $this->station_lng,
             'created_at' => $this->created_at,
         ];
     }

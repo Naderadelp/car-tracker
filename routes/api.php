@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CarLogController;
 use App\Http\Controllers\CarModelController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FillUpController;
@@ -13,7 +14,9 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ServiceCenterController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TripController;
+use App\Http\Controllers\GasStationCheckInController;
 use App\Http\Controllers\UpcomingServiceController;
+use App\Http\Controllers\FuelPriceController;
 use App\Http\Controllers\UserRoleController;
 
 Route::prefix('auth')->group(function () {
@@ -36,7 +39,7 @@ Route::get('brands/{brand}/car-models', [CarModelController::class, 'index']);
 Route::get('brands/{brand}/car-model-names', [CarModelController::class, 'names']);
 Route::get('brands/{brand}/car-model-years', [CarModelController::class, 'years']);
 
-Route::middleware('auth:sanctum')->group(function ()
+Route::middleware(['auth:sanctum', \App\Http\Middleware\FirebaseTokenStoreMiddleware::class])->group(function ()
 {
     // Roles
     Route::get('roles', [RoleController::class, 'index']);
@@ -100,7 +103,15 @@ Route::middleware('auth:sanctum')->group(function ()
         // Fill-Ups
         Route::get('fill-ups', [FillUpController::class, 'index']);
         Route::post('fill-ups', [FillUpController::class, 'store']);
+        Route::post('fill-ups/quick', [FillUpController::class, 'quick']);
         Route::delete('fill-ups/{fillUp}', [FillUpController::class, 'destroy']);
+
+        // Car Logs
+        Route::get('logs', [CarLogController::class, 'index']);
+        Route::post('logs', [CarLogController::class, 'store']);
+        Route::get('logs/{log}', [CarLogController::class, 'show']);
+        Route::put('logs/{log}', [CarLogController::class, 'update']);
+        Route::delete('logs/{log}', [CarLogController::class, 'destroy']);
 
         // Trips
         Route::get('trips', [TripController::class, 'index']);
@@ -114,5 +125,14 @@ Route::middleware('auth:sanctum')->group(function ()
         Route::get   ('parking-records',                 [ParkingRecordController::class, 'index']);
         Route::post  ('parking-records',                 [ParkingRecordController::class, 'store']);
         Route::delete('parking-records/{parkingRecord}', [ParkingRecordController::class, 'destroy']);
+
+        // Gas Station Check-In
+        Route::post('gas-station-check-in', GasStationCheckInController::class);
     });
+
+    // Fuel Prices
+    Route::get('fuel-prices', [FuelPriceController::class, 'index']);
+    Route::post('fuel-prices', [FuelPriceController::class, 'store']);
+    Route::put('fuel-prices/{fuelPrice}', [FuelPriceController::class, 'update']);
+    Route::patch('fuel-prices/{fuelPrice}', [FuelPriceController::class, 'update']);
 });
