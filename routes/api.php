@@ -15,6 +15,7 @@ use App\Http\Controllers\ServiceCenterController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\GasStationCheckInController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UpcomingServiceController;
 use App\Http\Controllers\FuelPriceController;
 use App\Http\Controllers\UserRoleController;
@@ -41,6 +42,9 @@ Route::get('brands/{brand}/car-model-years', [CarModelController::class, 'years'
 
 Route::middleware(['auth:sanctum', \App\Http\Middleware\FirebaseTokenStoreMiddleware::class])->group(function ()
 {
+    // Home dashboard
+    Route::get('home', HomeController::class);
+
     // Roles
     Route::get('roles', [RoleController::class, 'index']);
     Route::post('roles', [RoleController::class, 'store']);
