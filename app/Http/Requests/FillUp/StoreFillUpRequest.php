@@ -18,6 +18,7 @@ class StoreFillUpRequest extends FormRequest
             'liters'    => ['required', 'numeric', 'min:0.1'],
             'cost_egp'  => ['required', 'numeric', 'min:0'],
             'fill_date' => ['required', 'date', 'before_or_equal:today'],
+            'tank_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 }

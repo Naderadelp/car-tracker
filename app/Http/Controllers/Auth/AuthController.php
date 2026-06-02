@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Http\Requests\Auth\ResendVerificationRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Http\Resources\CarResource;
 use App\Http\Resources\UserResource;
@@ -53,6 +54,7 @@ class AuthController extends BaseController
                 'brand_id'             => $request->brand_id,
                 'car_model_id'         => $carModelId,
                 'current_km'           => $request->current_km,
+                'tank_size'            => $request->tank_size,
                 'has_warranty'         => $request->has_warranty,
                 'warranty_limit_km'    => $request->warranty_limit_km,
                 'warranty_expiry_date' => $request->warranty_expiry_date,
@@ -136,6 +138,41 @@ class AuthController extends BaseController
         $user = $this->userRepository->find($request->user()->id);
 
         return $this->success(['user' => new UserResource($user)]);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        try {
+            DB::beginTransaction();
+
+            if ($request->filled('name')) {
+                $this->userRepository->update(['name' => $request->name], $user->id);
+            }
+
+            if ($request->has('tank_size')) {
+                $car = $this->carRepository->findWhereFirst(['user_id' => $user->id]);
+
+                if ($car) {
+                    $this->carRepository->update(['tank_size' => $request->tank_size], $car->id);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->error($e->getMessage(), 422);
+        }
+
+        $user = $this->userRepository->find($user->id);
+        $car  = $this->carRepository->findWhereFirst(['user_id' => $user->id]);
+
+        return $this->success([
+            'user' => new UserResource($user),
+            'car'  => $car ? new CarResource($car) : null,
+        ], 200, 'Profile updated successfully.');
     }
 
     public function logout(Request $request): JsonResponse

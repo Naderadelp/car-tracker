@@ -28,6 +28,7 @@ class RegisterUserRequest extends FormRequest
             ],
             'model_year'           => ['required', 'integer', 'digits:4'],
             'current_km'           => ['required', 'integer', 'min:0'],
+            'tank_size'            => ['nullable', 'numeric', 'min:0.1', 'max:999'],
             'has_warranty'         => ['required', 'boolean'],
             'warranty_limit_km'    => ['required_if:has_warranty,true', 'nullable', 'integer'],
             'warranty_expiry_date' => ['required_if:has_warranty,true', 'nullable', 'date'],

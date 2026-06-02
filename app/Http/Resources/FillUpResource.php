@@ -13,6 +13,7 @@ class FillUpResource extends JsonResource
             'id'         => $this->id,
             'car_id'     => $this->car_id,
             'liters'     => $this->liters,
+            'tank_percentage' => $this->tank_percentage,
             'odometer'   => $this->odometer,
             'cost_egp'   => $this->cost_egp,
             'fill_date'  => $this->fill_date?->toDateString(),

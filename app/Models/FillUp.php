@@ -16,6 +16,7 @@ class FillUp extends Model
     protected $fillable = [
         'car_id',
         'liters',
+        'tank_percentage',
         'odometer',
         'cost_egp',
         'fill_date',
@@ -29,6 +30,7 @@ class FillUp extends Model
         return [
             'fill_date' => 'date',
             'liters'    => 'decimal:2',
+            'tank_percentage' => 'decimal:2',
             'cost_egp'  => 'decimal:2',
             'fuel_type' => 'string',
             'station_lat' => 'decimal:8',

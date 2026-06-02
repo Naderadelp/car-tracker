@@ -21,3 +21,4 @@ yarn-error.log
 /storage/*.key
 /storage/logs/*.log
 /bootstrap/cache/*.php
+/storage/app/firebase/

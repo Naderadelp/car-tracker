@@ -20,6 +20,7 @@ class QuickFillUpRequest extends FormRequest
             'liters'      => ['nullable', 'numeric', 'min:0.01'],
             'station_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'station_lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'tank_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 }

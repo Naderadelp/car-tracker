@@ -47,6 +47,7 @@ class FillUpController extends BaseController
             $fillUp = $this->fillUpRepository->create([
                 'car_id'    => $car->id,
                 'liters'    => $request->liters,
+                'tank_percentage' => $request->tank_percentage,
                 'odometer'  => $car->current_km,
                 'cost_egp'  => $request->cost_egp,
                 'fill_date' => $request->fill_date,
@@ -88,6 +89,7 @@ class FillUpController extends BaseController
             $fillUp = $this->fillUpRepository->create([
                 'car_id'      => $car->id,
                 'liters'      => $liters,
+                'tank_percentage' => $request->tank_percentage,
                 'odometer'    => $car->current_km,
                 'cost_egp'    => $request->amount_paid,
                 'fill_date'   => now()->toDateString(),

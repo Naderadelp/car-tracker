@@ -22,6 +22,7 @@ class Car extends Model
         'brand_id',
         'car_model_id',
         'current_km',
+        'tank_size',
         'has_warranty',
         'warranty_limit_km',
         'warranty_expiry_date',
@@ -31,6 +32,7 @@ class Car extends Model
     {
         return [
             'current_km'           => 'integer',
+            'tank_size'            => 'decimal:2',
             'has_warranty'         => 'boolean',
             'warranty_limit_km'    => 'integer',
             'warranty_expiry_date' => 'date',
