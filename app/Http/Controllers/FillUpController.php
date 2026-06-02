@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FillUp\QuickFillUpRequest;
 use App\Http\Requests\FillUp\StoreFillUpRequest;
 use App\Http\Resources\FillUpResource;
 use App\Models\Car;
 use App\Models\FillUp;
 use App\Repositories\Contracts\FillUpRepository;
+use App\Repositories\Contracts\FuelPriceRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +17,7 @@ class FillUpController extends BaseController
 {
     public function __construct(
         protected FillUpRepository $fillUpRepository,
+        protected FuelPriceRepository $fuelPriceRepository,
     ) {}
 
     public function index(Request $request, Car $car): JsonResponse
@@ -68,5 +71,40 @@ class FillUpController extends BaseController
         $this->fillUpRepository->delete($fillUp->id);
 
         return $this->success([], 200, 'Fill-up deleted successfully.');
+    }
+
+    public function quick(QuickFillUpRequest $request, Car $car): JsonResponse
+    {
+        $liters = $request->liters;
+
+        if ($liters === null) {
+            $price  = $this->fuelPriceRepository->currentForType($request->fuel_type);
+            $liters = $price ? round($request->amount_paid / $price->price_per_unit, 2) : null;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $fillUp = $this->fillUpRepository->create([
+                'car_id'      => $car->id,
+                'liters'      => $liters,
+                'odometer'    => $car->current_km,
+                'cost_egp'    => $request->amount_paid,
+                'fill_date'   => now()->toDateString(),
+                'fuel_type'   => $request->fuel_type,
+                'station_lat' => $request->station_lat,
+                'station_lng' => $request->station_lng,
+            ]);
+
+            DB::commit();
+
+            return $this->success(
+                ['message' => 'Fill-up recorded successfully.', 'data' => new FillUpResource($fillUp)],
+                201
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->error($e->getMessage(), 422);
+        }
     }
 }

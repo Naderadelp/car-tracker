@@ -3,20 +3,26 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Repositories\Contracts\CarLogRepository;
+use App\Repositories\Contracts\CarRepository;
+use App\Repositories\Contracts\DeviceTokenRepository;
 use App\Repositories\Contracts\DocumentRepository;
+use App\Repositories\Contracts\FillUpRepository;
+use App\Repositories\Contracts\FuelPriceRepository;
 use App\Repositories\Contracts\ItemRepository;
 use App\Repositories\Contracts\ParkingRecordRepository;
 use App\Repositories\Contracts\PermissionRepository;
 use App\Repositories\Contracts\RoleRepository;
 use App\Repositories\Contracts\ServiceCenterRepository;
 use App\Repositories\Contracts\ServiceRepository;
-use App\Repositories\Contracts\UserRepository;
-use App\Repositories\Contracts\CarRepository;
-use App\Repositories\Contracts\FillUpRepository;
 use App\Repositories\Contracts\TripRepository;
+use App\Repositories\Contracts\UserRepository;
+use App\Repositories\Eloquent\CarLogRepositoryEloquent;
 use App\Repositories\Eloquent\CarRepositoryEloquent;
+use App\Repositories\Eloquent\DeviceTokenRepositoryEloquent;
 use App\Repositories\Eloquent\DocumentRepositoryEloquent;
 use App\Repositories\Eloquent\FillUpRepositoryEloquent;
+use App\Repositories\Eloquent\FuelPriceRepositoryEloquent;
 use App\Repositories\Eloquent\ItemRepositoryEloquent;
 use App\Repositories\Eloquent\ParkingRecordRepositoryEloquent;
 use App\Repositories\Eloquent\PermissionRepositoryEloquent;
@@ -32,6 +38,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->bind(UserRepository::class, UserRepositoryEloquent::class);
         $this->app->bind(CarRepository::class, CarRepositoryEloquent::class);
+        $this->app->bind(CarLogRepository::class, CarLogRepositoryEloquent::class);
         $this->app->bind(FillUpRepository::class, FillUpRepositoryEloquent::class);
         $this->app->bind(TripRepository::class, TripRepositoryEloquent::class);
         $this->app->bind(ParkingRecordRepository::class, ParkingRecordRepositoryEloquent::class);
@@ -41,5 +48,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(DocumentRepository::class, DocumentRepositoryEloquent::class);
         $this->app->bind(RoleRepository::class, RoleRepositoryEloquent::class);
         $this->app->bind(PermissionRepository::class, PermissionRepositoryEloquent::class);
+        $this->app->bind(DeviceTokenRepository::class, DeviceTokenRepositoryEloquent::class);
+        $this->app->bind(FuelPriceRepository::class, FuelPriceRepositoryEloquent::class);
     }
 }

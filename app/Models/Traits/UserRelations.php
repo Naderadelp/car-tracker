@@ -3,6 +3,7 @@
 namespace App\Models\Traits;
 
 use App\Models\Car;
+use App\Models\DeviceToken;
 use App\Models\Document;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -16,5 +17,10 @@ trait UserRelations
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function deviceTokens(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
     }
 }

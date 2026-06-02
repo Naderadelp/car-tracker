@@ -7,38 +7,37 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-class FillUp extends Model
+class CarLog extends Model
 {
     use LogsActivity;
 
-    protected $table = 'fill_ups';
+    protected $table = 'car_logs';
 
     protected $fillable = [
         'car_id',
-        'liters',
-        'odometer',
-        'cost_egp',
-        'fill_date',
-        'fuel_type',
-        'station_lat',
-        'station_lng',
+        'service_id',
+        'odometer_at_service',
+        'actual_cost',
+        'performed_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'fill_date' => 'date',
-            'liters'    => 'decimal:2',
-            'cost_egp'  => 'decimal:2',
-            'fuel_type' => 'string',
-            'station_lat' => 'decimal:8',
-            'station_lng' => 'decimal:8',
+            'odometer_at_service' => 'integer',
+            'actual_cost'         => 'decimal:2',
+            'performed_at'        => 'date',
         ];
     }
 
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class);
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
     }
 
     public function getActivitylogOptions(): LogOptions
