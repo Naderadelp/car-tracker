@@ -28,6 +28,7 @@ class RolePermissionsSeeder extends Seeder
         'permission',
         'car-log',
         'fuel-price',
+        'reminder',
     ];
 
     const INDEX        = 'index';

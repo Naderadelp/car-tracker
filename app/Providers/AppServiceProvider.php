@@ -13,6 +13,7 @@ use App\Models\FuelPrice;
 use App\Models\Item;
 use App\Models\ParkingRecord;
 use App\Models\Permission;
+use App\Models\Reminder;
 use App\Models\Role;
 use App\Models\Service;
 use App\Models\ServiceCenter;
@@ -21,6 +22,7 @@ use App\Models\User;
 use App\Events\CarLogCreated;
 use App\Events\GasStationCheckIn;
 use App\Events\OdometerAdvanced;
+use App\Listeners\CheckDueRemindersNotification;
 use App\Listeners\CheckUpcomingServicesNotification;
 use App\Listeners\SendGasStationReminderNotification;
 use App\Listeners\SendServiceCompletedNotification;
@@ -35,6 +37,7 @@ use App\Policies\FuelPricePolicy;
 use App\Policies\ItemPolicy;
 use App\Policies\ParkingRecordPolicy;
 use App\Policies\PermissionPolicy;
+use App\Policies\ReminderPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\ServiceCenterPolicy;
 use App\Policies\ServicePolicy;
@@ -51,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(CarLogCreated::class, SendServiceCompletedNotification::class);
         Event::listen(GasStationCheckIn::class, SendGasStationReminderNotification::class);
         Event::listen(OdometerAdvanced::class, CheckUpcomingServicesNotification::class);
+        Event::listen(OdometerAdvanced::class, CheckDueRemindersNotification::class);
 
         Gate::before(function (User $user, string $ability) {
             return $user->isAdmin() ? true : null;
@@ -70,5 +74,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(User::class,       UserPolicy::class);
         Gate::policy(CarLog::class,     CarLogPolicy::class);
+        Gate::policy(Reminder::class,   ReminderPolicy::class);
     }
 }

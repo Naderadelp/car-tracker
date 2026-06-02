@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\CarModel;
 use App\Models\FillUp;
 use App\Models\ParkingRecord;
+use App\Models\Reminder;
 use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,5 +42,10 @@ trait CarRelations
     public function parkingRecords(): HasMany
     {
         return $this->hasMany(ParkingRecord::class);
+    }
+
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(Reminder::class);
     }
 }

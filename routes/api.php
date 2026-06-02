@@ -9,6 +9,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FillUpController;
 use App\Http\Controllers\ParkingRecordController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ServiceCenterController;
@@ -116,6 +117,13 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\FirebaseTokenStoreMiddle
         Route::get('logs/{log}', [CarLogController::class, 'show']);
         Route::put('logs/{log}', [CarLogController::class, 'update']);
         Route::delete('logs/{log}', [CarLogController::class, 'destroy']);
+
+        // Reminders
+        Route::get('reminders', [ReminderController::class, 'index']);
+        Route::post('reminders', [ReminderController::class, 'store']);
+        Route::get('reminders/{reminder}', [ReminderController::class, 'show']);
+        Route::put('reminders/{reminder}', [ReminderController::class, 'update']);
+        Route::delete('reminders/{reminder}', [ReminderController::class, 'destroy']);
 
         // Trips
         Route::get('trips', [TripController::class, 'index']);

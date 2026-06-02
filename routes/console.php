@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('app:check-document-expiry')->daily();
 Schedule::command('app:check-warranty-expiry')->daily();
+Schedule::command('app:check-reminders')->daily();
