@@ -42,6 +42,26 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        /*
+         * The application authenticates API clients with Sanctum tokens via the
+         * `auth:sanctum` middleware, and spatie/laravel-permission labels every
+         * role and permission row with the guard name "api" (see the pinned
+         * $guard_name properties on App\Models\User, App\Models\Role and
+         * App\Models\Permission).
+         *
+         * Until now that label pointed at a guard that did not exist, so any
+         * call to Auth::guard('api') — including ones made from inside packages
+         * such as Filament — would have thrown "Auth guard [api] is not
+         * defined.". Declaring the guard here makes the label resolvable.
+         *
+         * Nothing routes through this guard by name today (`auth:sanctum` uses
+         * Sanctum's own guard), so adding it does not change API behaviour.
+         */
+        'api' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
     ],
 
     /*

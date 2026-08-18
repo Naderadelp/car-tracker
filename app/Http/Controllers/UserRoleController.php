@@ -21,6 +21,8 @@ class UserRoleController extends BaseController
 
     public function store(AssignRoleRequest $request, User $user): JsonResponse
     {
+        $this->authorize('assignRole', $user);
+
         $user->assignRole($request->validated()['role']);
         $user->load('roles');
 
