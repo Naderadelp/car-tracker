@@ -26,7 +26,7 @@ class FillUpResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-beaker';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Activity';
+    protected static string|UnitEnum|null $navigationGroup = 'Logbook';
 
     protected static ?int $navigationSort = 10;
 

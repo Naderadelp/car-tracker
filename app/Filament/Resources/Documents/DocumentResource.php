@@ -26,7 +26,7 @@ class DocumentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Activity';
+    protected static string|UnitEnum|null $navigationGroup = 'Logbook';
 
     protected static ?int $navigationSort = 40;
 
@@ -54,5 +54,44 @@ class DocumentResource extends Resource
             'create' => CreateDocument::route('/create'),
             'edit' => EditDocument::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * How many documents have lapsed or are about to.
+     *
+     * A badge earns its place only when the number implies an action, so this
+     * counts what needs chasing rather than how many rows the table holds.
+     * Filament resolves it only for a navigation item the user can already
+     * see, which means viewAny — and therefore `index-document` — has passed.
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::lapsingQuery()->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return static::lapsingQuery()
+            ->whereDate('expiry_date', '<', now())
+            ->exists()
+            ? 'danger'
+            : 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Expired, or expiring within 30 days';
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<Document>
+     */
+    protected static function lapsingQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return Document::query()
+            ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '<=', now()->addDays(30));
     }
 }

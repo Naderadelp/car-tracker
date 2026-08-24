@@ -26,7 +26,7 @@ class ReminderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bell-alert';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Activity';
+    protected static string|UnitEnum|null $navigationGroup = 'Logbook';
 
     protected static ?int $navigationSort = 30;
 
@@ -56,5 +56,35 @@ class ReminderResource extends Resource
             'create' => CreateReminder::route('/create'),
             'edit' => EditReminder::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * How many reminders came due without going out.
+     *
+     * `notified_at` carries the whole meaning here: a reminder that already
+     * fired is finished work, and counting it would train people to ignore
+     * the badge. Filament resolves this only for a navigation item the user
+     * can already see, which means viewAny — and therefore `index-reminder` —
+     * has passed.
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Reminder::query()
+            ->whereNull('notified_at')
+            ->whereNotNull('remind_on')
+            ->whereDate('remind_on', '<=', now())
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'danger';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Due, and not yet sent';
     }
 }
