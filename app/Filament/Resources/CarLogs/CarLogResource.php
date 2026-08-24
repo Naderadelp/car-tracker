@@ -26,7 +26,7 @@ class CarLogResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Activity';
+    protected static string|UnitEnum|null $navigationGroup = 'Logbook';
 
     protected static ?int $navigationSort = 20;
 
