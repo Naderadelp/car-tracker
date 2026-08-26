@@ -29,6 +29,8 @@ class RolePermissionsSeeder extends Seeder
         'car-log',
         'fuel-price',
         'reminder',
+        'cost',
+        'issue',
     ];
 
     const INDEX        = 'index';
@@ -61,6 +63,7 @@ class RolePermissionsSeeder extends Seeder
 
     private array $customPermissions = [
         'secure-download-document',
+        'secure-download-issue',
         'assign-role',
         'revoke-role',
         'assign-permission',

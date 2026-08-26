@@ -18,6 +18,9 @@ class QuickFillUpRequest extends FormRequest
             'amount_paid' => ['required', 'numeric', 'min:0.01'],
             'fuel_type'   => ['required', 'in:92,95,electric'],
             'liters'      => ['nullable', 'numeric', 'min:0.01'],
+            // Kept in step with StoreFillUpRequest so the two routes accept the
+            // same fields for the same resource (gap C1's other half).
+            'station_name' => ['nullable', 'string', 'max:255'],
             'station_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'station_lng' => ['nullable', 'numeric', 'between:-180,180'],
             'tank_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],

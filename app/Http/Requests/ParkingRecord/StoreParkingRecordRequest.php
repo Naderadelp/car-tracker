@@ -27,6 +27,9 @@ class StoreParkingRecordRequest extends FormRequest
         return [
             'name'        => ['nullable', 'string', 'max:255', 'required_without_all:latitude,longitude'],
             'description' => ['nullable', 'string', 'max:1000'],
+            // Gap F7 — the reverse-geocoded address, distinct from the label
+            // and the driver's own note.
+            'address'     => ['nullable', 'string', 'max:500'],
             'latitude'    => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
             'longitude'   => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             'parked_at'   => ['required', 'date', 'before_or_equal:now'],

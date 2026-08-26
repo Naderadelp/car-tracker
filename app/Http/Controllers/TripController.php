@@ -56,6 +56,18 @@ class TripController extends BaseController
                 'end_lat'           => $last['lat'],
                 'end_lng'           => $last['lng'],
                 'total_distance_km' => round($totalDistanceKm, 2),
+
+                /*
+                 * Gap F5 — measured on the device and previously discarded.
+                 * The duration is taken as sent rather than derived from the
+                 * two timestamps, because a trip may arrive with a duration and
+                 * no wall-clock times; where both are present the client is
+                 * still the authority on how long it was actually moving.
+                 */
+                'started_at'        => $request->started_at,
+                'ended_at'          => $request->ended_at,
+                'duration_seconds'  => $request->duration_seconds,
+                'max_speed_kmh'     => $request->max_speed_kmh,
             ]);
 
             DB::commit();

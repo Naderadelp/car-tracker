@@ -17,7 +17,9 @@ class UpdateDocumentRequest extends FormRequest
     {
         return [
             'type'          => ['sometimes', 'string', Rule::in(Document::TYPES)],
-            'expiry_date'   => ['nullable', 'date', 'after:today'],
+            // FR-007, matching StoreDocumentRequest: a past expiry date is a
+            // legitimate correction, not an error.
+            'expiry_date'   => ['nullable', 'date'],
             'document_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }

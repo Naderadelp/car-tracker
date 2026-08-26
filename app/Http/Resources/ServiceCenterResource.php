@@ -13,7 +13,11 @@ class ServiceCenterResource extends JsonResource
             'id'          => $this->id,
             'brand_id'    => $this->brand_id,
             'name'        => $this->name,
+            // FR-030 — fall back to the Latin value so the client never has to
+            // render a blank where an Arabic variant was never recorded.
+            'name_ar'     => $this->name_ar ?? $this->name,
             'address'     => $this->address,
+            'address_ar'  => $this->address_ar ?? $this->address,
             'open_at'     => $this->open_at?->format('H:i'),
             'close_at'    => $this->close_at?->format('H:i'),
             'mobile'      => $this->mobile,

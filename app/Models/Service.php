@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -53,8 +54,21 @@ class Service extends Model
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'service_items')
-            ->withPivot('car_id')
+            ->withPivot('car_id', 'name', 'price')
             ->withTimestamps();
+    }
+
+    /**
+     * Every checklist line, including a driver's own (gap F3).
+     *
+     * `items()` above is a belongsToMany joining on `item_id`, so a custom line
+     * — which has none — never appears through it. This relation is what the
+     * API returns; `items()` remains for the admin panel, which only ever deals
+     * in catalogue entries.
+     */
+    public function checklist(): HasMany
+    {
+        return $this->hasMany(ServiceItem::class, 'service_id');
     }
 
     public function getIsCatalogueAttribute(): bool

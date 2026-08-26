@@ -36,8 +36,10 @@ class DocumentRepositoryEloquent extends EloquentRepository implements DocumentR
 
     public function spatie(): static
     {
-        // Spec FR-009: non-expiring documents listed last, soonest expiring first
-        $this->model = $this->model->orderByRaw('ISNULL(expiry_date) ASC, expiry_date ASC');
+        // Spec FR-009: non-expiring documents listed last, soonest expiring first.
+        // `expiry_date IS NULL` is portable; ISNULL() is MySQL-only and throws
+        // on both PostgreSQL (production) and sqlite (the test suite).
+        $this->model = $this->model->orderByRaw('expiry_date IS NULL ASC, expiry_date ASC');
 
         return parent::spatie();
     }

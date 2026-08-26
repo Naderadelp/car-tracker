@@ -69,4 +69,55 @@ class FillUpRepositoryEloquent extends EloquentRepository implements FillUpRepos
             'total_distance_km'   => $distance,
         ];
     }
+
+    /**
+     * Gap A2 — the fuel chart plots km/L *per fill-up*, with best, worst and
+     * average called out. Only one all-time average existed, so the client had
+     * to walk the entire history to draw the chart.
+     *
+     * Reuses the same arithmetic as statistics() above, including the
+     * tank-percentage correction, applied to a single record instead of the
+     * whole series.
+     *
+     * The figure is **computed, never stored**: it depends on the preceding
+     * fill-up, so a stored value would go stale the moment a record was
+     * inserted between two others, or an odometer was corrected (decision D3).
+     *
+     * @return array<int, float|null> fill-up id => km per litre, null where undefined
+     */
+    public function efficiencySeries(int $carId): array
+    {
+        $tankSize = (float) (app(Car::class)->newQuery()->whereKey($carId)->value('tank_size') ?? 0);
+
+        $fills = app($this->model())->newQuery()
+            ->where('car_id', $carId)
+            ->orderBy('odometer')
+            ->get(['id', 'odometer', 'liters', 'tank_percentage']);
+
+        // The first fill-up has no distance preceding it, so its efficiency is
+        // undefined rather than zero — the chart must skip it, not plot it at
+        // the origin.
+        $series = $fills->isEmpty() ? [] : [$fills[0]->id => null];
+
+        for ($i = 1; $i < $fills->count(); $i++) {
+            $prev = $fills[$i - 1];
+            $curr = $fills[$i];
+
+            $distance = (int) $curr->odometer - (int) $prev->odometer;
+            $consumed = (float) $curr->liters;
+
+            if ($tankSize > 0 && $prev->tank_percentage !== null && $curr->tank_percentage !== null) {
+                $consumed += ((float) $prev->tank_percentage - (float) $curr->tank_percentage) / 100 * $tankSize;
+            }
+
+            // A non-positive distance means the odometer was corrected
+            // downwards between the two records; there is no meaningful figure
+            // to report, and a negative one would be worse than none.
+            $series[$curr->id] = ($distance > 0 && $consumed > 0)
+                ? round($distance / $consumed, 2)
+                : null;
+        }
+
+        return $series;
+    }
 }

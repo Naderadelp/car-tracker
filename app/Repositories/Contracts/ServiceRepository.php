@@ -7,5 +7,5 @@ use Illuminate\Support\Collection;
 
 interface ServiceRepository extends RepositoryInterface
 {
-    public function upcomingForCar(Car $car): Collection;
+    public function upcomingForCar(Car $car, bool $includePast = false): Collection;
 }

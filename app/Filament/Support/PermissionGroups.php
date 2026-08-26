@@ -39,6 +39,8 @@ class PermissionGroups
         'car-log',
         'fuel-price',
         'reminder',
+        'cost',
+        'issue',
     ];
 
     public const OTHER = 'other';

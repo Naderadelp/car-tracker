@@ -11,16 +11,36 @@ abstract class BaseController extends Controller
 {
     use Responder;
 
+    /**
+     * Every payload is wrapped in `data`, and `message` is included whenever one
+     * is given. Passing a JsonResource straight to response()->json() serialises
+     * it through jsonSerialize(), which skips the `data` wrapper that Laravel's
+     * own toResponse() path adds — so wrapping here is what keeps a single
+     * resource, a resource collection and a paginated list decodable by one
+     * client-side decoder.
+     */
     protected function success(mixed $data, int $status = 200, string $message = ''): JsonResponse
     {
-        return response()->json($data, $status);
+        $payload = ['data' => $data];
+
+        if ($message !== '') {
+            $payload['message'] = $message;
+        }
+
+        return response()->json($payload, $status);
     }
 
+    /**
+     * `errors` is cast to an object so it serialises as `{}` when empty rather
+     * than `[]`. An empty PHP array encodes as a JSON array, which made this
+     * field flip type between validation failures (object) and controller
+     * errors (array), so no single typed error model could parse both.
+     */
     protected function error(string $message, int $status = 400, array $errors = []): JsonResponse
     {
         return response()->json([
             'message' => $message,
-            'errors'  => $errors,
+            'errors'  => (object) $errors,
         ], $status);
     }
 

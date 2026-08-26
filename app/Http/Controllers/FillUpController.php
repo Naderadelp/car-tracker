@@ -31,6 +31,12 @@ class FillUpController extends BaseController
 
         $statistics = $this->fillUpRepository->statistics($car->id);
 
+        // Gap A2 — each record carries its own km/L so the fuel chart can be
+        // drawn from one page rather than the entire history.
+        $efficiency = $this->fillUpRepository->efficiencySeries($car->id);
+
+        FillUpResource::withEfficiency($efficiency);
+
         $response = $this->paginated($fillUps, FillUpResource::class);
         $data     = $response->getData(true);
 
@@ -48,9 +54,13 @@ class FillUpController extends BaseController
                 'car_id'    => $car->id,
                 'liters'    => $request->liters,
                 'tank_percentage' => $request->tank_percentage,
-                'odometer'  => $car->current_km,
+                // FR-010: prefer the reading taken at the pump; fall back to
+                // the car's current mileage only when none was sent.
+                'odometer'  => $request->odometer ?? $car->current_km,
                 'cost_egp'  => $request->cost_egp,
                 'fill_date' => $request->fill_date,
+                'fuel_type'    => $request->fuel_type,
+                'station_name' => $request->station_name,
             ]);
 
             DB::commit();
@@ -94,16 +104,14 @@ class FillUpController extends BaseController
                 'cost_egp'    => $request->amount_paid,
                 'fill_date'   => now()->toDateString(),
                 'fuel_type'   => $request->fuel_type,
+                'station_name' => $request->station_name,
                 'station_lat' => $request->station_lat,
                 'station_lng' => $request->station_lng,
             ]);
 
             DB::commit();
 
-            return $this->success(
-                ['message' => 'Fill-up recorded successfully.', 'data' => new FillUpResource($fillUp)],
-                201
-            );
+            return $this->success(new FillUpResource($fillUp), 201, 'Fill-up recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), 422);

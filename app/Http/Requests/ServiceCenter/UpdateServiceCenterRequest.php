@@ -15,6 +15,8 @@ class UpdateServiceCenterRequest extends FormRequest
     {
         return [
             'name'     => ['sometimes', 'string', 'max:255'],
+            'name_ar'    => ['nullable', 'string', 'max:255'],
+            'address_ar' => ['nullable', 'string', 'max:500'],
             'address'  => ['sometimes', 'string', 'max:500'],
             'open_at'  => ['sometimes', 'date_format:H:i,H:i:s'],
             'close_at' => ['sometimes', 'date_format:H:i,H:i:s', 'after:open_at'],

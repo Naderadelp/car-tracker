@@ -45,7 +45,7 @@ class CarLogController extends BaseController
 
             DB::commit();
 
-            return $this->success(['data' => new CarLogResource($log)], 201, 'Service log created.');
+            return $this->success(new CarLogResource($log), 201, 'Service log created.');
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), 422);
@@ -57,7 +57,7 @@ class CarLogController extends BaseController
         $this->authorize('view', $log);
         abort_if($log->car_id !== $car->id, 404);
 
-        return $this->success(['data' => new CarLogResource($log)]);
+        return $this->success(new CarLogResource($log));
     }
 
     public function update(UpdateCarLogRequest $request, Car $car, CarLog $log): JsonResponse
@@ -72,7 +72,7 @@ class CarLogController extends BaseController
 
             DB::commit();
 
-            return $this->success(['data' => new CarLogResource($log->refresh())]);
+            return $this->success(new CarLogResource($log->refresh()));
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), 422);

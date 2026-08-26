@@ -22,7 +22,7 @@ class CarModelController extends BaseController
                 ->orderByDesc('model_year')
                 ->get();
 
-            return $this->success(['data' => CarModelResource::collection($models)]);
+            return $this->success(CarModelResource::collection($models));
         }
 
         $models = $brand->carModels()->orderBy('name')->paginate();
@@ -40,7 +40,7 @@ class CarModelController extends BaseController
             ->map(fn (string $name) => ['name' => $name])
             ->values();
 
-        return $this->success(['data' => $names]);
+        return $this->success($names);
     }
 
     public function years(Brand $brand, \Illuminate\Http\Request $request): JsonResponse
@@ -60,7 +60,7 @@ class CarModelController extends BaseController
             ->map(fn (int $year) => ['year' => $year])
             ->values();
 
-        return $this->success(['data' => $years]);
+        return $this->success($years);
     }
 
     public function store(StoreCarModelRequest $request, Brand $brand): JsonResponse

@@ -20,6 +20,8 @@ class ParkingRecord extends Model
         'car_id',
         'name',
         'description',
+        // Gap F7 — label, address and note are three distinct strings in the app.
+        'address',
         'latitude',
         'longitude',
         'parked_at',

@@ -12,6 +12,8 @@ class ItemResource extends JsonResource
         return [
             'id'         => $this->id,
             'name'       => $this->name,
+            // FR-030 — Latin fallback when no Arabic variant is recorded.
+            'name_ar'    => $this->name_ar ?? $this->name,
             'price'      => $this->price,
             'services'   => ServiceResource::collection($this->whenLoaded('services')),
             'pivot'      => $this->when(isset($this->pivot), fn () => [

@@ -19,7 +19,10 @@ class ServiceCenter extends Model
     protected $fillable = [
         'brand_id',
         'name',
+        // Gap F6
+        'name_ar',
         'address',
+        'address_ar',
         'open_at',
         'close_at',
         'mobile',

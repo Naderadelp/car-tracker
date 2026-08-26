@@ -43,12 +43,16 @@ class DocumentController extends BaseController
                 'expiry_date' => $request->expiry_date,
             ]);
 
-            $document->addMediaFromRequest('document_file')
-                     ->toMediaCollection('vehicle_documents');
+            // FR-006: a document is now metadata-first. The scan is optional at
+            // creation and can be attached later through update() (FR-008).
+            if ($request->hasFile('document_file')) {
+                $document->addMediaFromRequest('document_file')
+                         ->toMediaCollection('vehicle_documents');
+            }
 
             DB::commit();
 
-            return $this->success(new DocumentResource($document), 201, 'Document uploaded successfully.');
+            return $this->success(new DocumentResource($document), 201, 'Document saved successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 

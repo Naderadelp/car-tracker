@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -10,7 +11,7 @@ use App\Models\Traits\CarRelations;
 
 class Car extends Model
 {
-    use LogsActivity, SoftDeletes, CarRelations;
+    use HasFactory, LogsActivity, SoftDeletes, CarRelations;
 
     public static $logAttributes = ['*'];
     protected static $logName = 'Car';
@@ -21,11 +22,14 @@ class Car extends Model
         'user_id',
         'brand_id',
         'car_model_id',
+        'color',
         'current_km',
         'tank_size',
         'has_warranty',
         'warranty_limit_km',
         'warranty_expiry_date',
+        'purchase_price_egp',
+        'purchased_at',
     ];
 
     protected function casts(): array
@@ -36,6 +40,8 @@ class Car extends Model
             'has_warranty'         => 'boolean',
             'warranty_limit_km'    => 'integer',
             'warranty_expiry_date' => 'date',
+            'purchase_price_egp'   => 'decimal:2',
+            'purchased_at'         => 'date',
         ];
     }
 

@@ -18,6 +18,9 @@ class Item extends Model
 
     protected $fillable = [
         'name',
+        // Gap F6 — the app switches locale without a refetch, so both variants
+        // ship together.
+        'name_ar',
         'price',
     ];
 
