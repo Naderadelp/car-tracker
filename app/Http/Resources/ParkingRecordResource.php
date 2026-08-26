@@ -14,6 +14,7 @@ class ParkingRecordResource extends JsonResource
             'car_id'      => $this->car_id,
             'name'        => $this->name,
             'description' => $this->description,
+            'address'     => $this->address,
             'latitude'    => $this->latitude,
             'longitude'   => $this->longitude,
             'parked_at'   => $this->parked_at?->toISOString(),

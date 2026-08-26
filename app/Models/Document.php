@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -11,7 +12,7 @@ use App\Models\Traits\DocumentRelations;
 
 class Document extends Model implements HasMedia
 {
-    use DocumentRelations, InteractsWithMedia, LogsActivity;
+    use DocumentRelations, HasFactory, InteractsWithMedia, LogsActivity;
 
     public const TYPES = [
         'vehicle_license',

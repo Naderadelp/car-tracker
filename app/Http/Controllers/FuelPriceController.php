@@ -35,7 +35,7 @@ class FuelPriceController extends BaseController
 
             DB::commit();
 
-            return $this->success(['data' => new FuelPriceResource($price)], 201, 'Fuel price created.');
+            return $this->success(new FuelPriceResource($price), 201, 'Fuel price created.');
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), 422);
@@ -51,7 +51,7 @@ class FuelPriceController extends BaseController
 
             DB::commit();
 
-            return $this->success(['data' => new FuelPriceResource($fuelPrice->refresh())]);
+            return $this->success(new FuelPriceResource($fuelPrice->refresh()));
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), 422);

@@ -18,6 +18,7 @@ class UpdateItemRequest extends FormRequest
 
         return [
             'name'  => ['sometimes', 'string', 'max:255', Rule::unique('items', 'name')->ignore($itemId)],
+            'name_ar' => ['nullable', 'string', 'max:255'],
             'price' => ['sometimes', 'numeric', 'min:0'],
         ];
     }

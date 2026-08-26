@@ -6,6 +6,7 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -18,7 +19,7 @@ use App\Models\Traits\UserRelations;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, HasDefaultRoles, LogsActivity, Notifiable, UserRelations;
+    use HasApiTokens, HasFactory, HasRoles, HasDefaultRoles, LogsActivity, Notifiable, SoftDeletes, UserRelations;
 
     /**
      * The spatie/laravel-permission guard every role and permission row for this

@@ -42,7 +42,7 @@ class ReminderController extends BaseController
 
             DB::commit();
 
-            return $this->success(['data' => new ReminderResource($reminder)], 201, 'Reminder created.');
+            return $this->success(new ReminderResource($reminder), 201, 'Reminder created.');
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), 422);
@@ -54,7 +54,7 @@ class ReminderController extends BaseController
         $this->authorize('view', $reminder);
         abort_if($reminder->car_id !== $car->id, 404);
 
-        return $this->success(['data' => new ReminderResource($reminder)]);
+        return $this->success(new ReminderResource($reminder));
     }
 
     public function update(UpdateReminderRequest $request, Car $car, Reminder $reminder): JsonResponse
@@ -69,7 +69,7 @@ class ReminderController extends BaseController
 
             DB::commit();
 
-            return $this->success(['data' => new ReminderResource($reminder->refresh())]);
+            return $this->success(new ReminderResource($reminder->refresh()));
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage(), 422);

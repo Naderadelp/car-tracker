@@ -19,7 +19,14 @@ class UpcomingServiceController extends BaseController
     {
         $this->authorize('viewAny', [Service::class, $car]);
 
-        $services = $this->serviceRepository->upcomingForCar($car);
+        /*
+         * Gap F2 — opt-in so the existing route keeps its current behaviour for
+         * any client already calling it, while the Services grid can ask for
+         * the whole schedule in one request.
+         */
+        $includePast = $request->boolean('include_past');
+
+        $services = $this->serviceRepository->upcomingForCar($car, $includePast);
 
         return $this->success(ServiceResource::collection($services));
     }

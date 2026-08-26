@@ -17,6 +17,11 @@ class TripResource extends JsonResource
             'end_lat'           => $this->end_lat,
             'end_lng'           => $this->end_lng,
             'total_distance_km' => $this->total_distance_km,
+            // Gap F5
+            'started_at'        => $this->started_at?->toISOString(),
+            'ended_at'          => $this->ended_at?->toISOString(),
+            'duration_seconds'  => $this->duration_seconds,
+            'max_speed_kmh'     => $this->max_speed_kmh,
             'created_at'        => $this->created_at,
         ];
     }

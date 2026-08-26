@@ -28,9 +28,16 @@ class ServiceRepositoryEloquent extends EloquentRepository implements ServiceRep
         }
     }
 
-    public function upcomingForCar(Car $car): Collection
+    /**
+     * @param bool $includePast Gap F2 — the Services grid shows the *whole*
+     *                          schedule: completed intervals greyed, the next
+     *                          one highlighted, later ones ahead of it. The
+     *                          `km > current_km` filter made everything already
+     *                          passed unreachable from this route.
+     */
+    public function upcomingForCar(Car $car, bool $includePast = false): Collection
     {
-        return app($this->model())->newQuery()
+        $query = app($this->model())->newQuery()
             ->where(function ($q) use ($car) {
                 $q->where(function ($qq) use ($car) {
                     $qq->where('car_model_id', $car->car_model_id)
@@ -40,8 +47,22 @@ class ServiceRepositoryEloquent extends EloquentRepository implements ServiceRep
                     $qq->where('car_id', $car->id)
                        ->where('user_id', $car->user_id);
                 });
-            })
-            ->where('km', '>', $car->current_km)
+            });
+
+        if (! $includePast) {
+            $query->where('km', '>', $car->current_km);
+        }
+
+        /*
+         * Gap F1 — this used to be withCount('items'), which is exactly the
+         * bare `items_count` the app complained about: tapping an interval
+         * opens a checklist, and that screen *is* the Services tab, so a count
+         * forced a second paginated request to render anything.
+         *
+         * The count is kept alongside for any existing consumer.
+         */
+        return $query
+            ->with(['checklist.item'])
             ->withCount('items')
             ->orderBy('km')
             ->get();

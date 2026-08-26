@@ -21,6 +21,7 @@ class FillUp extends Model
         'cost_egp',
         'fill_date',
         'fuel_type',
+        'station_name',
         'station_lat',
         'station_lng',
     ];

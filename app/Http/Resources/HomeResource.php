@@ -12,6 +12,7 @@ class HomeResource extends JsonResource
         $car      = $this->resource['car'];
         $trips    = $this->resource['trips'];
         $upcoming = $this->resource['upcoming'];
+        $issues   = $this->resource['issues'] ?? collect();
 
         return [
             'car'            => new CarResource($car),
@@ -23,6 +24,9 @@ class HomeResource extends JsonResource
                 'trips'    => TripResource::collection($trips),
             ],
             'next_services'  => ServiceResource::collection($upcoming),
+            // FR-021 — high-severity faults still open, shown next to overdue
+            // services on the notifications screen.
+            'issues_needing_attention' => IssueResource::collection($issues),
         ];
     }
 }

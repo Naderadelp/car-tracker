@@ -3,16 +3,21 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CarController;
 use App\Http\Controllers\CarLogController;
 use App\Http\Controllers\CarModelController;
+use App\Http\Controllers\CostController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FillUpController;
 use App\Http\Controllers\ParkingRecordController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\IssueController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ServiceCenterController;
+use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\ValuationController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\GasStationCheckInController;
@@ -32,6 +37,8 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('user', [AuthController::class, 'me']);
         Route::put('user', [AuthController::class, 'updateProfile']);
+        // Required by both app stores from any app offering account creation.
+        Route::delete('user', [AuthController::class, 'destroy']);
         Route::post('logout', [AuthController::class, 'logout']);
     });
 });
@@ -98,6 +105,11 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\FirebaseTokenStoreMiddle
     // User-service create (per car)
     Route::post('cars/{car}/services', [ServiceController::class, 'store']);
 
+    // Cars — gap B1. The odometer, warranty (F9) and colour (F8) were all
+    // write-once at registration before this.
+    Route::get('cars/{car}', [CarController::class, 'show']);
+    Route::match(['put', 'patch'], 'cars/{car}', [CarController::class, 'update']);
+
     Route::prefix('cars/{car}')->group(function () {
         // Documents
         Route::get('documents', [DocumentController::class, 'index']);
@@ -111,6 +123,23 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\FirebaseTokenStoreMiddle
         Route::post('fill-ups', [FillUpController::class, 'store']);
         Route::post('fill-ups/quick', [FillUpController::class, 'quick']);
         Route::delete('fill-ups/{fillUp}', [FillUpController::class, 'destroy']);
+
+        // Costs — gap B4. A unified ledger: fuel and maintenance spending
+        // carries across automatically (decision D2).
+        Route::get   ('costs',         [CostController::class, 'index']);
+        Route::post  ('costs',         [CostController::class, 'store']);
+        Route::get   ('costs/{cost}',  [CostController::class, 'show']);
+        Route::match (['put', 'patch'], 'costs/{cost}', [CostController::class, 'update']);
+        Route::delete('costs/{cost}',  [CostController::class, 'destroy']);
+
+        // Issues — gap B5. The photo-first fault log.
+        Route::get   ('issues',                [IssueController::class, 'index']);
+        Route::post  ('issues',                [IssueController::class, 'store']);
+        Route::get   ('issues/{issue}',        [IssueController::class, 'show']);
+        Route::match (['put', 'patch'], 'issues/{issue}', [IssueController::class, 'update']);
+        Route::delete('issues/{issue}',        [IssueController::class, 'destroy']);
+        // Streams binary, not JSON — the photo lives on the private disk.
+        Route::get   ('issues/{issue}/photo',  [IssueController::class, 'photo']);
 
         // Car Logs
         Route::get('logs', [CarLogController::class, 'index']);
@@ -133,10 +162,17 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\FirebaseTokenStoreMiddle
         // Upcoming maintenance
         Route::get('upcoming-services', [UpcomingServiceController::class, 'index']);
 
+        // Insights — gaps A1 and A3. One request each, rather than walking the
+        // whole history a page at a time.
+        Route::get('statistics', StatisticsController::class);
+        Route::get('valuation',  ValuationController::class);
+
         // Parking Records
         Route::get   ('parking-records/current',         [ParkingRecordController::class, 'current']);
         Route::get   ('parking-records',                 [ParkingRecordController::class, 'index']);
         Route::post  ('parking-records',                 [ParkingRecordController::class, 'store']);
+        // Gap F7 — the resource was create/delete only.
+        Route::match (['put', 'patch'], 'parking-records/{parkingRecord}', [ParkingRecordController::class, 'update']);
         Route::delete('parking-records/{parkingRecord}', [ParkingRecordController::class, 'destroy']);
 
         // Gas Station Check-In

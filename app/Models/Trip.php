@@ -23,6 +23,11 @@ class Trip extends Model
         'end_lat',
         'end_lng',
         'total_distance_km',
+        // Gap F5 — duration and top speed were gone the moment a trip was posted.
+        'started_at',
+        'ended_at',
+        'duration_seconds',
+        'max_speed_kmh',
     ];
 
     protected function casts(): array
@@ -33,6 +38,10 @@ class Trip extends Model
             'end_lat'           => 'decimal:8',
             'end_lng'           => 'decimal:8',
             'total_distance_km' => 'decimal:2',
+            'started_at'        => 'datetime',
+            'ended_at'          => 'datetime',
+            'duration_seconds'  => 'integer',
+            'max_speed_kmh'     => 'decimal:2',
         ];
     }
 

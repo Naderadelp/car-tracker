@@ -20,6 +20,16 @@ class ParkingRecordPolicy
             || $user->hasPermissionTo('create-parking-record');
     }
 
+    /**
+     * Gap F7 — the resource was create/delete only, so there was no update
+     * ability to authorize against.
+     */
+    public function update(User $user, ParkingRecord $parkingRecord): bool
+    {
+        return $user->id === $parkingRecord->car->user_id
+            || $user->hasPermissionTo('edit-parking-record');
+    }
+
     public function delete(User $user, ParkingRecord $parkingRecord): bool
     {
         return $user->id === $parkingRecord->car->user_id

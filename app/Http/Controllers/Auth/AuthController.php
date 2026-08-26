@@ -53,6 +53,7 @@ class AuthController extends BaseController
                 'user_id'              => $user->id,
                 'brand_id'             => $request->brand_id,
                 'car_model_id'         => $carModelId,
+                'color'                => $request->color,
                 'current_km'           => $request->current_km,
                 'tank_size'            => $request->tank_size,
                 'has_warranty'         => $request->has_warranty,
@@ -91,7 +92,7 @@ class AuthController extends BaseController
 
         $this->userRepository->update(['email_verified_at' => now()], $user->id);
 
-        return $this->success(['message' => 'Email verified successfully.'], 200);
+        return $this->success([], 200, 'Email verified successfully.');
     }
 
     public function resendVerification(ResendVerificationRequest $request): JsonResponse
@@ -136,8 +137,15 @@ class AuthController extends BaseController
     public function me(Request $request): JsonResponse
     {
         $user = $this->userRepository->find($request->user()->id);
+        $car  = $this->carRepository->findWhereFirst(['user_id' => $user->id]);
 
-        return $this->success(['user' => new UserResource($user)]);
+        // Gap C4: the car ships alongside the user so a cold app launch needs
+        // one request rather than two. This mirrors updateProfile(), which has
+        // always returned both.
+        return $this->success([
+            'user' => new UserResource($user),
+            'car'  => $car ? new CarResource($car) : null,
+        ]);
     }
 
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
@@ -175,6 +183,66 @@ class AuthController extends BaseController
         ], 200, 'Profile updated successfully.');
     }
 
+    /**
+     * FR-011, FR-012 — in-app account deletion.
+     *
+     * Both app stores require this from any app that offers account creation,
+     * so its absence blocks store review rather than merely integration.
+     *
+     * Media is cleared before the owning rows go, because Spatie stores files
+     * on disk keyed by the model: deleting the row first would strand the file
+     * with nothing pointing at it.
+     */
+    public function destroy(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($user->documents as $document) {
+                $document->clearMediaCollection('vehicle_documents');
+                $document->delete();
+            }
+
+            foreach ($user->cars as $car) {
+                $car->fillUps()->delete();
+                $car->trips()->delete();
+                $car->parkingRecords()->delete();
+                $car->reminders()->delete();
+                $car->forceDelete();
+            }
+
+            $user->deviceTokens()->delete();
+
+            // Every session ends, not just this one.
+            $user->tokens()->delete();
+
+            /*
+             * The email and name are scrubbed before the soft delete, for two
+             * reasons. The row survives the delete, so leaving the address on
+             * it would keep personal data the driver asked us to remove; and
+             * `users.email` is unique, so a soft-deleted row would otherwise
+             * hold the address hostage and the driver could never sign up
+             * again with their own email.
+             */
+            $user->forceFill([
+                'email' => "deleted-{$user->id}@deleted.invalid",
+                'name'  => 'Deleted account',
+            ])->save();
+
+            $user->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->error($e->getMessage(), 422);
+        }
+
+        return $this->success([], 200, 'Account deleted.');
+    }
+
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
@@ -184,7 +252,28 @@ class AuthController extends BaseController
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        $this->otpService->send($request->email, EmailOtp::PURPOSE_RESET);
+        /*
+         * FR-013 — the response must be identical whether or not the address
+         * has an account.
+         *
+         * Three things had to be equalised, not one:
+         *   - the `exists` validation rule (removed from ForgotPasswordRequest)
+         *   - actually sending mail to an address with no account, which both
+         *     leaks by side channel and lets the endpoint be used to spam
+         *     arbitrary inboxes
+         *   - the resend-cooldown ValidationException, which would otherwise
+         *     answer "please wait" for a registered address and 200 for an
+         *     unregistered one on the second request
+         */
+        $user = $this->userRepository->findWhereFirst(['email' => $request->email]);
+
+        if ($user) {
+            try {
+                $this->otpService->send($request->email, EmailOtp::PURPOSE_RESET);
+            } catch (ValidationException) {
+                // Cooldown hit. Answer as though the code went out.
+            }
+        }
 
         return $this->success([], 200, 'Verification code sent.');
     }

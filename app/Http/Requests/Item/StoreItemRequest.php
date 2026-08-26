@@ -16,6 +16,9 @@ class StoreItemRequest extends FormRequest
     {
         return [
             'name'  => ['required', 'string', 'max:255', 'unique:items,name'],
+            // Gap F6 — deliberately not unique: two catalogue entries may
+            // legitimately share an Arabic name.
+            'name_ar' => ['nullable', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0'],
         ];
     }

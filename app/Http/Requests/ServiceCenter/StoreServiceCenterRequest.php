@@ -16,6 +16,9 @@ class StoreServiceCenterRequest extends FormRequest
     {
         return [
             'name'     => ['required', 'string', 'max:255'],
+            // Gap F6
+            'name_ar'    => ['nullable', 'string', 'max:255'],
+            'address_ar' => ['nullable', 'string', 'max:500'],
             'address'  => ['required', 'string', 'max:500'],
             'open_at'  => ['required', 'date_format:H:i,H:i:s'],
             'close_at' => ['required', 'date_format:H:i,H:i:s', 'after:open_at'],

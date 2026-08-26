@@ -16,9 +16,15 @@ class CarLog extends Model
     protected $fillable = [
         'car_id',
         'service_id',
+        // Gap F4 — ad-hoc work (service_id null) used to record a cost with no
+        // description at all.
+        'title',
+        'workshop',
+        'category',
         'odometer_at_service',
         'actual_cost',
         'performed_at',
+        'notes',
     ];
 
     protected function casts(): array

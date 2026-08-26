@@ -5,6 +5,9 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Brand;
+use App\Models\Car;
+use App\Models\Cost;
+use App\Models\Issue;
 use App\Models\CarLog;
 use App\Models\CarModel;
 use App\Models\Document;
@@ -26,9 +29,14 @@ use App\Listeners\CheckDueRemindersNotification;
 use App\Listeners\CheckUpcomingServicesNotification;
 use App\Listeners\SendGasStationReminderNotification;
 use App\Listeners\SendServiceCompletedNotification;
+use App\Observers\CarLogObserver;
+use App\Observers\FillUpObserver;
 use App\Observers\TripObserver;
 use Illuminate\Support\Facades\Event;
 use App\Policies\BrandPolicy;
+use App\Policies\CarPolicy;
+use App\Policies\CostPolicy;
+use App\Policies\IssuePolicy;
 use App\Policies\CarLogPolicy;
 use App\Policies\CarModelPolicy;
 use App\Policies\DocumentPolicy;
@@ -51,6 +59,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Trip::observe(TripObserver::class);
+
+        // Decision D2 — fuel and maintenance spending carries across into the
+        // unified cost ledger without the driver entering it twice.
+        FillUp::observe(FillUpObserver::class);
+        CarLog::observe(CarLogObserver::class);
         Event::listen(CarLogCreated::class, SendServiceCompletedNotification::class);
         Event::listen(GasStationCheckIn::class, SendGasStationReminderNotification::class);
         Event::listen(OdometerAdvanced::class, CheckUpcomingServicesNotification::class);
@@ -61,6 +74,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(Brand::class,      BrandPolicy::class);
+        Gate::policy(Car::class,        CarPolicy::class);
+        Gate::policy(Cost::class,       CostPolicy::class);
+        Gate::policy(Issue::class,      IssuePolicy::class);
         Gate::policy(CarModel::class,   CarModelPolicy::class);
         Gate::policy(Document::class,   DocumentPolicy::class);
         Gate::policy(FillUp::class,        FillUpPolicy::class);

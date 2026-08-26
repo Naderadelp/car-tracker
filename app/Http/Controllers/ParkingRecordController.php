@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ParkingRecord\StoreParkingRecordRequest;
+use App\Http\Requests\ParkingRecord\UpdateParkingRecordRequest;
 use App\Http\Resources\ParkingRecordResource;
 use App\Models\Car;
 use App\Models\ParkingRecord;
@@ -49,6 +50,7 @@ class ParkingRecordController extends BaseController
                 'car_id'      => $car->id,
                 'name'        => $request->name,
                 'description' => $request->description,
+                'address'     => $request->address,
                 'latitude'    => $request->latitude,
                 'longitude'   => $request->longitude,
                 'parked_at'   => $request->parked_at,
@@ -66,6 +68,33 @@ class ParkingRecordController extends BaseController
 
             return $this->error($e->getMessage(), 422);
         }
+    }
+
+    /**
+     * Gap F7 — the driver edits the current location in place. Authorization
+     * lives in UpdateParkingRecordRequest per Principle II.
+     */
+    public function update(UpdateParkingRecordRequest $request, Car $car, ParkingRecord $parkingRecord): JsonResponse
+    {
+        abort_if($parkingRecord->car_id !== $car->id, 404);
+
+        try {
+            DB::beginTransaction();
+
+            $record = $this->parkingRepository->update($request->validated(), $parkingRecord->id);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->error($e->getMessage(), 422);
+        }
+
+        return $this->success(
+            new ParkingRecordResource($record),
+            200,
+            'Parking record updated successfully.',
+        );
     }
 
     public function destroy(Request $request, Car $car, ParkingRecord $parkingRecord): JsonResponse
