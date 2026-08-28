@@ -25,7 +25,7 @@ class CarModelController extends BaseController
             return $this->success(CarModelResource::collection($models));
         }
 
-        $models = $brand->carModels()->orderBy('name')->paginate();
+        $models = $brand->carModels()->orderBy('name')->paginate($this->perPage());
 
         return $this->paginated($models, CarModelResource::class);
     }

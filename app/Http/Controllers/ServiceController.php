@@ -22,7 +22,7 @@ class ServiceController extends BaseController
     {
         $this->authorize('viewAny', Service::class);
 
-        $services = $this->serviceRepository->spatie()->paginate();
+        $services = $this->serviceRepository->spatie()->paginate($this->perPage());
 
         return $this->paginated($services, ServiceResource::class);
     }

@@ -24,7 +24,7 @@ class TripController extends BaseController
         $trips = $this->tripRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         return $this->paginated($trips, TripResource::class);
     }

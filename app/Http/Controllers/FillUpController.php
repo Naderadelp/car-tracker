@@ -27,7 +27,7 @@ class FillUpController extends BaseController
         $fillUps = $this->fillUpRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         $statistics = $this->fillUpRepository->statistics($car->id);
 

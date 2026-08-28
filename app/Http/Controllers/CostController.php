@@ -32,7 +32,7 @@ class CostController extends BaseController
         $costs = $this->costRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         $response = $this->paginated($costs, CostResource::class);
         $data     = $response->getData(true);

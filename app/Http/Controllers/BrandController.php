@@ -12,7 +12,7 @@ class BrandController extends BaseController
 {
     public function index(): JsonResponse
     {
-        $brands = Brand::orderBy('name')->paginate();
+        $brands = Brand::orderBy('name')->paginate($this->perPage());
 
         return $this->paginated($brands, BrandResource::class);
     }

@@ -15,7 +15,7 @@ class PermissionController extends BaseController
     {
         $this->authorize('viewAny', Permission::class);
 
-        $permissions = $this->permissionRepository->spatie()->paginate();
+        $permissions = $this->permissionRepository->spatie()->paginate($this->perPage());
 
         return $this->paginated($permissions, PermissionResource::class);
     }

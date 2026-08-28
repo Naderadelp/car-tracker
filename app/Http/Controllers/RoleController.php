@@ -20,7 +20,7 @@ class RoleController extends BaseController
     {
         $this->authorize('viewAny', Role::class);
 
-        $roles = $this->roleRepository->spatie()->paginate();
+        $roles = $this->roleRepository->spatie()->paginate($this->perPage());
 
         return $this->paginated($roles, RoleResource::class);
     }

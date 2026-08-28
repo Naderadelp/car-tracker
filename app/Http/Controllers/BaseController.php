@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Traits\Responder;
@@ -42,6 +43,36 @@ abstract class BaseController extends Controller
             'message' => $message,
             'errors'  => (object) $errors,
         ], $status);
+    }
+
+    /** Fallback page size when the client asks for nothing. */
+    protected const PER_PAGE_DEFAULT = 15;
+
+    /**
+     * Hard ceiling. The mobile client's screens open on the ledger and the
+     * fault log, and a driver with years of history behind them would
+     * otherwise be able to ask for all of it in one query.
+     */
+    protected const PER_PAGE_MAX = 100;
+
+    /**
+     * `?per_page=` on any paginated collection.
+     *
+     * Page size used to be fixed at 15 with no way to change it, so a client
+     * that wanted a whole list had to walk it a page at a time on every screen
+     * open. Out-of-range and non-numeric values are clamped rather than
+     * rejected: a page size is a hint, and answering 422 to `per_page=1000`
+     * would fail a request that has a perfectly good answer.
+     */
+    protected function perPage(?Request $request = null): int
+    {
+        $requested = ($request ?? request())->query('per_page');
+
+        if (! is_numeric($requested)) {
+            return self::PER_PAGE_DEFAULT;
+        }
+
+        return (int) max(1, min(self::PER_PAGE_MAX, (int) $requested));
     }
 
     protected function paginated(LengthAwarePaginator $paginator, string $resourceClass): JsonResponse

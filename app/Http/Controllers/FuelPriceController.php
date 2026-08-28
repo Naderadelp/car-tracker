@@ -21,7 +21,7 @@ class FuelPriceController extends BaseController
     {
         $this->authorize('viewAny', FuelPrice::class);
 
-        $prices = $this->fuelPriceRepository->spatie()->paginate();
+        $prices = $this->fuelPriceRepository->spatie()->paginate($this->perPage());
 
         return $this->paginated($prices, FuelPriceResource::class);
     }

@@ -21,7 +21,7 @@ class ItemController extends BaseController
     {
         $this->authorize('viewAny', Item::class);
 
-        $items = $this->itemRepository->spatie()->paginate();
+        $items = $this->itemRepository->spatie()->paginate($this->perPage());
 
         return $this->paginated($items, ItemResource::class);
     }

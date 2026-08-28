@@ -25,7 +25,7 @@ class ParkingRecordController extends BaseController
         $records = $this->parkingRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         return $this->paginated($records, ParkingRecordResource::class);
     }

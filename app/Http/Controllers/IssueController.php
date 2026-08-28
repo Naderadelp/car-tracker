@@ -33,7 +33,7 @@ class IssueController extends BaseController
         $issues = $this->issueRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         return $this->paginated($issues, IssueResource::class);
     }

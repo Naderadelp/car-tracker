@@ -26,7 +26,7 @@ class CarLogController extends BaseController
         $logs = $this->carLogRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         return $this->paginated($logs, CarLogResource::class);
     }

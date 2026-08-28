@@ -25,7 +25,7 @@ class ReminderController extends BaseController
         $reminders = $this->reminderRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         return $this->paginated($reminders, ReminderResource::class);
     }

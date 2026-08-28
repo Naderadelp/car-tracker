@@ -26,7 +26,7 @@ class DocumentController extends BaseController
         $documents = $this->documentRepository
             ->where('car_id', $car->id)
             ->spatie()
-            ->paginate();
+            ->paginate($this->perPage());
 
         return $this->paginated($documents, DocumentResource::class);
     }

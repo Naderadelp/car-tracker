@@ -14,7 +14,7 @@ class UserRoleController extends BaseController
     {
         $this->authorize('index-user');
 
-        $roles = $user->roles()->with('permissions')->paginate();
+        $roles = $user->roles()->with('permissions')->paginate($this->perPage());
 
         return $this->paginated($roles, RoleResource::class);
     }
