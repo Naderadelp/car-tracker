@@ -46,6 +46,19 @@ class AdminPanelProvider extends PanelProvider
              */
             ->authGuard('web')
             ->brandName('Car Tracker Ops')
+            /*
+             * The browser tab icon: the CAR TRACKING mark, cropped to the front
+             * of the car because the full side profile is a 7:1 stripe that
+             * dissolves into grey mush below about 48px. The red edge is not
+             * decoration — a #181818 tile is invisible against Chrome's
+             * dark-theme tab strip, and the edge is what makes the tab findable
+             * in both themes.
+             *
+             * Points at the .ico rather than a PNG so the browser picks the
+             * hand-checked 16, 32 and 48px renderings instead of downsampling
+             * one image to all three.
+             */
+            ->favicon(asset('favicon.ico'))
             ->brandLogo(fn () => view('filament.admin.brand'))
             ->brandLogoHeight('1.6rem')
             /*
